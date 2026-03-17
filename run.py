@@ -29,6 +29,7 @@ with app.app_context():
         print("✅ Admin garantido")
     else:
         print("⚠️ Usuário não encontrado — crie a conta primeiro no site")
+        
 
 if __name__ == '__main__':
     app.run()
