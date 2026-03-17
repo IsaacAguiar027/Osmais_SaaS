@@ -1,15 +1,18 @@
 import os
 
 class Config:
-    # Chave secreta para sessões (troque em produção!)
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'osmais-dev-secret-key-2024'
 
-    # Banco de dados SQLite (arquivo local, perfeito para começar)
-    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'osmais.db')
+    # Em produção usa PostgreSQL (Railway), em desenvolvimento usa SQLite
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+    if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
+        DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL or \
+        'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'osmais.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Email (esqueceu a senha)
+    # Email
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
     MAIL_USE_TLS = True
