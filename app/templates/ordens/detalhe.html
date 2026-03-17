@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}— OS #{{ '%04d' % ordem.id }}{% endblock %}
+
+{% block content %}
+<div class="flex items-center gap-3 mb-6">
+  <a href="{{ url_for('ordens.lista') }}" class="text-gray-400 hover:text-gray-600">← Voltar</a>
+  <h1 class="text-xl font-medium text-gray-800">OS #{{ '%04d' % ordem.id }}</h1>
+  {% if ordem.status == 'aberta' %}
+    <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">Aberta</span>
+  {% elif ordem.status == 'em_reparo' %}
+    <span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">Em reparo</span>
+  {% elif ordem.status == 'ag_peca' %}
+    <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">Ag. peça</span>
+  {% elif ordem.status == 'ag_aprovacao' %}
+    <span class="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">Ag. aprovação</span>
+  {% elif ordem.status == 'concluida' %}
+    <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">Concluída</span>
+  {% elif ordem.status == 'cancelada' %}
+    <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">Cancelada</span>
+  {% endif %}
+</div>
+
+<div class="grid grid-cols-2 gap-4 max-w-3xl">
+  <!-- Informações da OS -->
+  <div class="bg-white rounded-xl border border-gray-200 p-5">
+    <h2 class="text-sm font-medium text-gray-700 mb-4">Informações</h2>
+    <div class="space-y-3 text-sm">
+      <div class="flex justify-between">
+        <span class="text-gray-500">Cliente</span>
+        <span class="text-gray-800 font-medium">{{ ordem.cliente.nome }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Telefone</span>
+        <span class="text-gray-800">{{ ordem.cliente.telefone or '—' }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Dispositivo</span>
+        <span class="text-gray-800">{{ ordem.dispositivo }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Valor cobrado</span>
+        <span class="text-gray-800 font-medium">R$ {{ '%.2f' % ordem.valor }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Criada em</span>
+        <span class="text-gray-800">{{ ordem.criado_em.strftime('%d/%m/%Y %H:%M') }}</span>
+      </div>
+    </div>
+
+    <!-- Custos internos -->
+    {% if ordem.valor_peca or ordem.valor_mao_obra %}
+    <div class="mt-4 pt-4 border-t border-amber-200 bg-amber-50 rounded-lg p-3">
+      <p class="text-xs font-medium text-amber-700 mb-2 flex items-center gap-1">
+        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3a.75.75 0 110 1.5A.75.75 0 018 4zm.75 7.75h-1.5v-5h1.5v5z"/></svg>
+        Custos internos
+      </p>
+      <div class="space-y-1 text-xs">
+        <div class="flex justify-between">
+          <span class="text-amber-700">Peça</span>
+          <span class="text-amber-900 font-medium">R$ {{ '%.2f' % (ordem.valor_peca or 0) }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-amber-700">Mão de obra</span>
+          <span class="text-amber-900 font-medium">R$ {{ '%.2f' % (ordem.valor_mao_obra or 0) }}</span>
+        </div>
+        <div class="flex justify-between pt-1 border-t border-amber-200">
+          <span class="text-amber-700">Margem</span>
+          <span class="text-green-700 font-medium">R$ {{ '%.2f' % (ordem.valor - (ordem.valor_peca or 0) - (ordem.valor_mao_obra or 0)) }}</span>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Problema e diagnóstico -->
+  <div class="bg-white rounded-xl border border-gray-200 p-5">
+    <h2 class="text-sm font-medium text-gray-700 mb-4">Técnico</h2>
+    <div class="space-y-3 text-sm">
+      <div>
+        <p class="text-gray-500 mb-1">Problema relatado</p>
+        <p class="text-gray-800">{{ ordem.problema }}</p>
+      </div>
+      {% if ordem.diagnostico %}
+      <div>
+        <p class="text-gray-500 mb-1">Diagnóstico</p>
+        <p class="text-gray-800">{{ ordem.diagnostico }}</p>
+      </div>
+      {% endif %}
+      {% if ordem.servico_realizado %}
+      <div class="pt-3 border-t border-gray-100">
+        <p class="text-gray-500 mb-1 flex items-center gap-1">
+          <svg class="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/></svg>
+          Serviço realizado
+        </p>
+        <p class="text-gray-800">{{ ordem.servico_realizado }}</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Ações -->
+<div class="flex gap-3 mt-4 max-w-3xl">
+  <a href="{{ url_for('ordens.editar', id=ordem.id) }}"
+     class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors">
+    Editar OS
+  </a>
+  <a href="{{ url_for('ordens.pdf', id=ordem.id) }}" target="_blank"
+     class="border border-gray-300 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors flex items-center gap-2">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M3 2h7l3 3v9H3V2z"/><path d="M10 2v3h3"/><path d="M5 8h6M5 10.5h4"/></svg>
+    Gerar PDF
+  </a>
+  <form method="POST" action="{{ url_for('ordens.deletar', id=ordem.id) }}"
+        onsubmit="return confirm('Tem certeza que deseja remover esta OS?')">
+    <button type="submit"
+      class="border border-red-200 text-red-500 px-4 py-2 rounded-lg text-sm hover:bg-red-50 transition-colors">
+      Remover
+    </button>
+  </form>
+</div>
+{% endblock %}

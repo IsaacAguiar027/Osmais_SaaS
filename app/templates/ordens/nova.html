@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}— Nova OS{% endblock %}
+
+{% block content %}
+<div class="flex items-center gap-3 mb-6">
+  <a href="{{ url_for('ordens.lista') }}" class="text-gray-400 hover:text-gray-600">← Voltar</a>
+  <h1 class="text-xl font-medium text-gray-800">Nova Ordem de Serviço</h1>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 p-6 max-w-2xl">
+  <form method="POST">
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+      <select name="cliente_id" required
+        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="">Selecione um cliente...</option>
+        {% for cliente in clientes %}
+          <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+        {% endfor %}
+      </select>
+      <a href="{{ url_for('clientes.novo') }}" class="text-xs text-blue-500 hover:underline mt-1 inline-block">
+        + Cadastrar novo cliente
+      </a>
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Dispositivo</label>
+      <input type="text" name="dispositivo" required placeholder="Ex: iPhone 11, Samsung A54, Notebook Dell..."
+        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Problema relatado</label>
+      <textarea name="problema" required rows="3" placeholder="Descreva o problema relatado pelo cliente..."
+        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Valor estimado (R$)</label>
+      <input type="number" name="valor" step="0.01" placeholder="0.00"
+        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+
+    <button type="submit"
+      class="bg-gray-900 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+      Criar OS
+    </button>
+  </form>
+</div>
+{% endblock %}

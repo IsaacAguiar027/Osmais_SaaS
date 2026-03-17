@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; font-size: 13px; color: #1a1a1a; padding: 40px; }
+
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 2px solid #1a2236; }
+    .logo { font-size: 24px; font-weight: bold; color: #1a2236; }
+    .logo span { color: #2563eb; }
+    .os-numero { font-size: 14px; color: #666; text-align: right; }
+    .os-numero strong { font-size: 20px; color: #1a2236; display: block; }
+
+    .section { margin-bottom: 24px; }
+    .section-title { font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; color: #666; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 1px solid #e5e7eb; }
+
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .info-item { display: flex; flex-direction: column; gap: 2px; }
+    .info-label { font-size: 11px; color: #888; }
+    .info-value { font-size: 13px; color: #1a1a1a; font-weight: 500; }
+
+    .texto-bloco { background: #f9fafb; border-radius: 6px; padding: 12px; line-height: 1.6; color: #374151; }
+
+    .valor-box { background: #1a2236; color: white; border-radius: 8px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
+    .valor-label { font-size: 13px; opacity: 0.75; }
+    .valor-numero { font-size: 22px; font-weight: bold; }
+
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+    .badge-concluida { background: #dcfce7; color: #166534; }
+    .badge-aberta { background: #f3f4f6; color: #374151; }
+    .badge-em_reparo { background: #dbeafe; color: #1e40af; }
+
+    .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 11px; color: #9ca3af; }
+
+    @media print {
+      body { padding: 20px; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="logo">{{ current_user.nome_loja }}</div>
+      <div style="font-size:11px; color:#888; margin-top:4px;">Assistência Técnica</div>
+    </div>
+    <div class="os-numero">
+      Ordem de Serviço
+      <strong>#{{ '%04d' % ordem.id }}</strong>
+      <div style="font-size:11px; color:#888; margin-top:2px;">{{ ordem.criado_em.strftime('%d/%m/%Y') }}</div>
+    </div>
+  </div>
+
+  <!-- Dados do cliente -->
+  <div class="section">
+    <div class="section-title">Dados do cliente</div>
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">Nome</span>
+        <span class="info-value">{{ ordem.cliente.nome }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Telefone</span>
+        <span class="info-value">{{ ordem.cliente.telefone or '—' }}</span>
+      </div>
+      {% if ordem.cliente.email %}
+      <div class="info-item">
+        <span class="info-label">Email</span>
+        <span class="info-value">{{ ordem.cliente.email }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Equipamento -->
+  <div class="section">
+    <div class="section-title">Equipamento</div>
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">Dispositivo</span>
+        <span class="info-value">{{ ordem.dispositivo }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Status</span>
+        <span class="badge badge-{{ ordem.status }}">
+          {% if ordem.status == 'aberta' %}Aberta
+          {% elif ordem.status == 'em_reparo' %}Em reparo
+          {% elif ordem.status == 'ag_peca' %}Aguardando peça
+          {% elif ordem.status == 'ag_aprovacao' %}Aguardando aprovação
+          {% elif ordem.status == 'concluida' %}Concluída
+          {% elif ordem.status == 'cancelada' %}Cancelada
+          {% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Problema relatado -->
+  <div class="section">
+    <div class="section-title">Problema relatado</div>
+    <div class="texto-bloco">{{ ordem.problema }}</div>
+  </div>
+
+  <!-- Serviço realizado (só aparece se preenchido) -->
+  {% if ordem.servico_realizado %}
+  <div class="section">
+    <div class="section-title">Serviço realizado</div>
+    <div class="texto-bloco">{{ ordem.servico_realizado }}</div>
+  </div>
+  {% endif %}
+
+  <!-- Valor total — SEM detalhes de peça/mão de obra -->
+  <div class="valor-box">
+    <span class="valor-label">Valor total do serviço</span>
+    <span class="valor-numero">R$ {{ '%.2f' % ordem.valor }}</span>
+  </div>
+
+  <!-- Rodapé -->
+  <div class="footer">
+    Documento gerado em {{ ordem.criado_em.strftime('%d/%m/%Y às %H:%M') }} · {{ current_user.nome_loja }}
+  </div>
+
+  <!-- Botão imprimir (não aparece no PDF) -->
+  <div class="no-print" style="text-align:center; margin-top:32px;">
+    <button onclick="window.print()"
+      style="background:#1a2236; color:white; border:none; padding:10px 24px; border-radius:8px; font-size:13px; cursor:pointer;">
+      Imprimir / Salvar PDF
+    </button>
+    <a href="{{ url_for('ordens.detalhe', id=ordem.id) }}"
+      style="margin-left:12px; color:#666; font-size:13px; text-decoration:none;">← Voltar</a>
+  </div>
+
+</body>
+</html>

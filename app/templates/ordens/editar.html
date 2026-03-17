@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}— Editar OS #{{ '%04d' % ordem.id }}{% endblock %}
+
+{% block content %}
+<div class="flex items-center gap-3 mb-6">
+  <a href="{{ url_for('ordens.detalhe', id=ordem.id) }}" class="text-gray-400 hover:text-gray-600">← Voltar</a>
+  <h1 class="text-xl font-medium text-gray-800">Editar OS #{{ '%04d' % ordem.id }}</h1>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 p-6 max-w-2xl">
+  <form method="POST">
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+      <select name="cliente_id" required
+        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        {% for cliente in clientes %}
+          <option value="{{ cliente.id }}" {% if cliente.id == ordem.cliente_id %}selected{% endif %}>
+            {{ cliente.nome }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Dispositivo</label>
+      <input type="text" name="dispositivo" required value="{{ ordem.dispositivo }}"
+        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Problema relatado</label>
+      <textarea name="problema" required rows="3"
+        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none">{{ ordem.problema }}</textarea>
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Diagnóstico técnico</label>
+      <textarea name="diagnostico" rows="3" placeholder="Laudo técnico do reparo..."
+        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none">{{ ordem.diagnostico or '' }}</textarea>
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Serviço realizado</label>
+      <textarea name="servico_realizado" rows="3" placeholder="Descreva o que foi feito no aparelho..."
+        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none">{{ ordem.servico_realizado or '' }}</textarea>
+      <p class="text-xs text-gray-400 mt-1">Ex: Troca de tela, substituição de bateria, limpeza da placa...</p>
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+      <select name="status"
+        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="aberta"        {% if ordem.status == 'aberta' %}selected{% endif %}>Aberta</option>
+        <option value="em_reparo"     {% if ordem.status == 'em_reparo' %}selected{% endif %}>Em reparo</option>
+        <option value="ag_peca"       {% if ordem.status == 'ag_peca' %}selected{% endif %}>Aguardando peça</option>
+        <option value="ag_aprovacao"  {% if ordem.status == 'ag_aprovacao' %}selected{% endif %}>Aguardando aprovação</option>
+        <option value="concluida"     {% if ordem.status == 'concluida' %}selected{% endif %}>Concluída</option>
+        <option value="cancelada"     {% if ordem.status == 'cancelada' %}selected{% endif %}>Cancelada</option>
+      </select>
+    </div>
+
+    <!-- Seção de custos internos -->
+    <div class="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+      <p class="text-xs font-medium text-amber-700 mb-3 flex items-center gap-1">
+        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3a.75.75 0 110 1.5A.75.75 0 018 4zm.75 7.75h-1.5v-5h1.5v5z"/></svg>
+        Custos internos — não aparecem no PDF do cliente
+      </p>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs text-amber-800 mb-1">Valor da peça (R$)</label>
+          <input type="number" id="valor_peca" name="valor_peca" step="0.01"
+            value="{{ ordem.valor_peca or 0 }}"
+            oninput="calcularTotal()"
+            class="w-full border border-amber-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+        </div>
+        <div>
+          <label class="block text-xs text-amber-800 mb-1">Mão de obra (R$)</label>
+          <input type="number" id="valor_mao_obra" name="valor_mao_obra" step="0.01"
+            value="{{ ordem.valor_mao_obra or 0 }}"
+            oninput="calcularTotal()"
+            class="w-full border border-amber-300 bg-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+        </div>
+      </div>
+    </div>
+
+    <!-- Valor total cobrado do cliente -->
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-gray-700 mb-1">
+        Valor total cobrado do cliente (R$)
+        <span class="text-xs text-gray-400 font-normal ml-1">— calculado automaticamente, editável</span>
+      </label>
+      <input type="number" id="valor" name="valor" step="0.01"
+        value="{{ ordem.valor }}"
+        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <p class="text-xs text-gray-400 mt-1">Este é o valor que aparece no orçamento do cliente.</p>
+    </div>
+
+    <script>
+      function calcularTotal() {
+        var peca = parseFloat(document.getElementById("valor_peca").value) || 0;
+        var mao = parseFloat(document.getElementById("valor_mao_obra").value) || 0;
+        document.getElementById("valor").value = (peca + mao).toFixed(2);
+      }
+    </script>
+
+    <button type="submit"
+      class="bg-gray-900 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+      Salvar alterações
+    </button>
+  </form>
+</div>
+{% endblock %}

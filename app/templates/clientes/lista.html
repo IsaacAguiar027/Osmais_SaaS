@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}— Clientes{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-xl font-medium text-gray-800">Clientes</h1>
+  <a href="{{ url_for('clientes.novo') }}"
+     class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors">
+    + Novo Cliente
+  </a>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+  {% if clientes %}
+  <table class="w-full">
+    <thead class="bg-gray-50 text-xs text-gray-500">
+      <tr>
+        <th class="px-5 py-3 text-left">Nome</th>
+        <th class="px-5 py-3 text-left">Telefone</th>
+        <th class="px-5 py-3 text-left">Email</th>
+        <th class="px-5 py-3 text-left">OS</th>
+        <th class="px-5 py-3"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for cliente in clientes %}
+      <tr class="hover:bg-gray-50 transition-colors">
+        <td class="px-5 py-3 text-sm font-medium text-gray-800">{{ cliente.nome }}</td>
+        <td class="px-5 py-3 text-sm text-gray-600">{{ cliente.telefone or '—' }}</td>
+        <td class="px-5 py-3 text-sm text-gray-600">{{ cliente.email or '—' }}</td>
+        <td class="px-5 py-3 text-sm text-gray-600">{{ cliente.ordens | length }}</td>
+        <td class="px-5 py-3">
+          <form method="POST" action="{{ url_for('clientes.deletar', id=cliente.id) }}"
+                onsubmit="return confirm('Remover cliente {{ cliente.nome }}?')">
+            <button type="submit" class="text-xs text-red-400 hover:text-red-600">Remover</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="px-5 py-10 text-center text-sm text-gray-400">
+    Nenhum cliente cadastrado.
+    <a href="{{ url_for('clientes.novo') }}" class="text-blue-500 hover:underline ml-1">Cadastrar agora</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

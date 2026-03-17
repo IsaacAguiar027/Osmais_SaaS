@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}— Pagamento aprovado{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto text-center py-16">
+  <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+    <svg class="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/></svg>
+  </div>
+  <h1 class="text-xl font-medium text-gray-800 mb-2">Pagamento aprovado!</h1>
+  <p class="text-sm text-gray-500 mb-6">Seu plano foi ativado com sucesso. Bom uso do OSmais!</p>
+  <a href="{{ url_for('dashboard.index') }}"
+     class="bg-gray-900 text-white px-6 py-2.5 rounded-lg text-sm hover:bg-gray-800 transition-colors">
+    Ir para o dashboard
+  </a>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; background: #f3f4f6; padding: 40px 0;">
+  <div style="max-width: 480px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden;">
+    <!-- Header -->
+    <div style="background: #1a2236; padding: 24px 32px;">
+      <span style="color: white; font-size: 20px; font-weight: bold;">OS<span style="color: #60a5fa;">mais</span></span>
+    </div>
+
+    <!-- Body -->
+    <div style="padding: 32px;">
+      <p style="color: #374151; font-size: 15px; margin-bottom: 8px;">Olá, <strong>{{ nome }}</strong>!</p>
+      <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+        Recebemos uma solicitação para redefinir a senha da conta associada à loja
+        <strong>{{ nome_loja }}</strong>. Clique no botão abaixo para criar uma nova senha.
+      </p>
+
+      <div style="text-align: center; margin-bottom: 24px;">
+        <a href="{{ link }}"
+           style="background: #1a2236; color: white; padding: 12px 28px; border-radius: 8px;
+                  text-decoration: none; font-size: 14px; font-weight: bold; display: inline-block;">
+          Redefinir senha
+        </a>
+      </div>
+
+      <p style="color: #9ca3af; font-size: 12px; line-height: 1.6;">
+        Este link expira em <strong>1 hora</strong>. Se você não solicitou a redefinição,
+        ignore este email — sua senha permanece a mesma.
+      </p>
+
+      <p style="color: #d1d5db; font-size: 11px; margin-top: 16px; word-break: break-all;">
+        Ou cole este link no navegador: {{ link }}
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="background: #f9fafb; padding: 16px 32px; border-top: 1px solid #e5e7eb;">
+      <p style="color: #9ca3af; font-size: 11px; text-align: center; margin: 0;">
+        OSmais — Sistema de Gestão para Assistências Técnicas
+      </p>
+    </div>
+  </div>
+</body>
+</html>

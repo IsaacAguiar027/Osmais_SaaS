@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}— Pagamento pendente{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto text-center py-16">
+  <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+    <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v4M8 11v.5"/></svg>
+  </div>
+  <h1 class="text-xl font-medium text-gray-800 mb-2">Pagamento pendente</h1>
+  <p class="text-sm text-gray-500 mb-2">Seu pagamento está sendo processado.</p>
+  <p class="text-sm text-gray-500 mb-6">Se pagou por boleto, pode levar até 3 dias úteis. Seu acesso será ativado automaticamente.</p>
+  <a href="{{ url_for('dashboard.index') }}"
+     class="bg-gray-900 text-white px-6 py-2.5 rounded-lg text-sm hover:bg-gray-800 transition-colors">
+    Voltar ao dashboard
+  </a>
+</div>
+{% endblock %}
