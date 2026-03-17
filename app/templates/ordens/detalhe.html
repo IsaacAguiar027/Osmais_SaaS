@@ -20,7 +20,7 @@
   {% endif %}
 </div>
 
-<div class="grid grid-cols-2 gap-4 max-w-3xl">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
   <!-- Informações da OS -->
   <div class="bg-white rounded-xl border border-gray-200 p-5">
     <h2 class="text-sm font-medium text-gray-700 mb-4">Informações</h2>
@@ -100,7 +100,7 @@
 </div>
 
 <!-- Ações -->
-<div class="flex gap-3 mt-4 max-w-3xl">
+<div class="flex gap-3 mt-4 max-w-3xl flex-wrap">
   <a href="{{ url_for('ordens.editar', id=ordem.id) }}"
      class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors">
     Editar OS
@@ -110,12 +110,47 @@
     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16"><path d="M3 2h7l3 3v9H3V2z"/><path d="M10 2v3h3"/><path d="M5 8h6M5 10.5h4"/></svg>
     Gerar PDF
   </a>
+  {% if ordem.cliente.telefone %}
+  <button type="button" onclick="enviarWhatsApp('{{ ordem.id }}', '{{ ordem.cliente.telefone }}', '{{ ordem.cliente.nome }}')"
+     class="border border-green-300 text-green-600 px-4 py-2 rounded-lg text-sm hover:bg-green-50 transition-colors flex items-center gap-2">
+    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.272-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.006a9.87 9.87 0 00-5.031 1.378c-1.61.892-2.577 2.274-2.577 3.878 0 2.123 1.7 3.968 3.97 3.968.369 0 .729-.037 1.073-.11l.823 2.414c.15.447.505.741.927.741.484 0 .941-.313 1.129-.782l1.622-4.915h.001c1.773-1.592 2.823-3.737 2.823-6.01 0-4.539-3.582-8.228-7.99-8.228-4.414 0-7.998 3.689-7.998 8.228 0 .657.05 1.312.15 1.954.026.158.142.273.3.273.15 0 .282-.115.307-.275-.094-.611-.141-1.235-.141-1.897 0-3.874 3.06-7.032 6.81-7.032 3.75 0 6.809 3.158 6.809 7.032 0 2.126-.793 4.077-2.102 5.577m.855 5.701l-1.187-3.583-.34.085c-.314.078-.648.121-.987.121-2.034 0-3.682-1.618-3.682-3.61 0-1.992 1.648-3.61 3.682-3.61 2.034 0 3.683 1.618 3.683 3.61 0 1.153-.413 2.21-1.169 3.024l-.395-.106h-.005z"/></svg>
+    Enviar via WhatsApp
+  </button>
+  {% else %}
+  <button type="button" disabled
+     class="border border-gray-300 text-gray-400 px-4 py-2 rounded-lg text-sm cursor-not-allowed flex items-center gap-2">
+    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.272-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.006a9.87 9.87 0 00-5.031 1.378c-1.61.892-2.577 2.274-2.577 3.878 0 2.123 1.7 3.968 3.97 3.968.369 0 .729-.037 1.073-.11l.823 2.414c.15.447.505.741.927.741.484 0 .941-.313 1.129-.782l1.622-4.915h.001c1.773-1.592 2.823-3.737 2.823-6.01 0-4.539-3.582-8.228-7.99-8.228-4.414 0-7.998 3.689-7.998 8.228 0 .657.05 1.312.15 1.954.026.158.142.273.3.273.15 0 .282-.115.307-.275-.094-.611-.141-1.235-.141-1.897 0-3.874 3.06-7.032 6.81-7.032 3.75 0 6.809 3.158 6.809 7.032 0 2.126-.793 4.077-2.102 5.577m.855 5.701l-1.187-3.583-.34.085c-.314.078-.648.121-.987.121-2.034 0-3.682-1.618-3.682-3.61 0-1.992 1.648-3.61 3.682-3.61 2.034 0 3.683 1.618 3.683 3.61 0 1.153-.413 2.21-1.169 3.024l-.395-.106h-.005z"/></svg>
+    WhatsApp (sem telefone)
+  </button>
+  {% endif %}
   <form method="POST" action="{{ url_for('ordens.deletar', id=ordem.id) }}"
-        onsubmit="return confirm('Tem certeza que deseja remover esta OS?')">
+        onsubmit="return confirm('Tem certeza que deseja remover esta OS?')"
+        class="flex gap-3">
     <button type="submit"
       class="border border-red-200 text-red-500 px-4 py-2 rounded-lg text-sm hover:bg-red-50 transition-colors">
       Remover
     </button>
   </form>
 </div>
+
+<script>
+function enviarWhatsApp(ordemId, telefone, nomeCliente) {
+  // Remove caracteres especiais do telefone
+  const telefoneLimpo = telefone.replace(/\D/g, '');
+  
+  // Garante que o telefone tem o código do país
+  let telefoneWhatsApp = telefoneLimpo;
+  if (!telefoneLimpo.startsWith('55')) {
+    telefoneWhatsApp = '55' + telefoneLimpo;
+  }
+  
+  // Cria a mensagem com link do PDF
+  const mensagem = `Olá ${nomeCliente}! Segue em anexo o orçamento da sua ordem de serviço #${String(ordemId).padStart(4, '0')}. Disponível em: ${window.location.origin}/ordens/${ordemId}/pdf`;
+  
+  const mensagemCodificada = encodeURIComponent(mensagem);
+  const urlWhatsApp = `https://wa.me/${telefoneWhatsApp}?text=${mensagemCodificada}`;
+  
+  window.open(urlWhatsApp, '_blank');
+}
+</script>
 {% endblock %}

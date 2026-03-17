@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}— Admin · Clientes{% endblock %}
+
+{% block content %}
+<div class="flex items-center gap-2 mb-6">
+  <a href="{{ url_for('admin.dashboard') }}" class="text-gray-400 hover:text-gray-600 text-sm">← Admin</a>
+  <span class="text-gray-300">/</span>
+  <h1 class="text-xl font-medium text-gray-800">Clientes</h1>
+  <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">{{ clientes|length }}</span>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+  {% if clientes %}
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[500px]">
+      <thead class="bg-gray-50 text-xs text-gray-500">
+        <tr>
+          <th class="px-5 py-3 text-left">Nome</th>
+          <th class="px-5 py-3 text-left">Telefone</th>
+          <th class="px-5 py-3 text-left">Email</th>
+          <th class="px-5 py-3 text-left">OS</th>
+          <th class="px-5 py-3 text-left">Cadastrado em</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for c in clientes %}
+        <tr class="hover:bg-gray-50">
+          <td class="px-5 py-3 text-sm font-medium text-gray-800">{{ c.nome }}</td>
+          <td class="px-5 py-3 text-sm text-gray-600">{{ c.telefone or '—' }}</td>
+          <td class="px-5 py-3 text-sm text-gray-600">{{ c.email or '—' }}</td>
+          <td class="px-5 py-3 text-sm text-gray-600">{{ c.ordens|length }}</td>
+          <td class="px-5 py-3 text-xs text-gray-400">{{ c.criado_em.strftime('%d/%m/%Y') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="px-5 py-10 text-center text-sm text-gray-400">Nenhum cliente cadastrado.</div>
+  {% endif %}
+</div>
+{% endblock %}

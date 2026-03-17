@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}— Admin · Usuários{% endblock %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+  <div class="flex items-center gap-2">
+    <a href="{{ url_for('admin.dashboard') }}" class="text-gray-400 hover:text-gray-600 text-sm">← Admin</a>
+    <span class="text-gray-300">/</span>
+    <h1 class="text-xl font-medium text-gray-800">Usuários</h1>
+    <span class="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full">{{ usuarios|length }}</span>
+  </div>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+  {% if usuarios %}
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[640px]">
+      <thead class="bg-gray-50 text-xs text-gray-500">
+        <tr>
+          <th class="px-5 py-3 text-left">Usuário</th>
+          <th class="px-5 py-3 text-left">Email</th>
+          <th class="px-5 py-3 text-left">Plano</th>
+          <th class="px-5 py-3 text-left">Acesso</th>
+          <th class="px-5 py-3 text-left">Cadastro</th>
+          <th class="px-5 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for u in usuarios %}
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-5 py-3">
+            <p class="text-sm font-medium text-gray-800">
+              {{ u.nome }}
+              {% if u.is_admin %}<span class="ml-1 text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded">admin</span>{% endif %}
+            </p>
+            <p class="text-xs text-gray-400">{{ u.nome_loja }}</p>
+          </td>
+          <td class="px-5 py-3 text-sm text-gray-600">{{ u.email }}</td>
+          <td class="px-5 py-3">
+            {% if u.plano == 'trial' %}
+              <span class="px-2 py-1 rounded-full text-xs bg-amber-100 text-amber-700">Trial</span>
+            {% elif u.plano == 'mensal' %}
+              <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">Mensal</span>
+            {% elif u.plano == 'anual' %}
+              <span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">Anual</span>
+            {% else %}
+              <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">Expirado</span>
+            {% endif %}
+          </td>
+          <td class="px-5 py-3">
+            {% if u.acesso_ativo %}
+              <span class="text-xs text-green-600">● Ativo · {{ u.dias_restantes }}d</span>
+            {% else %}
+              <span class="text-xs text-red-500">● Inativo</span>
+            {% endif %}
+          </td>
+          <td class="px-5 py-3 text-xs text-gray-400">{{ u.criado_em.strftime('%d/%m/%Y') }}</td>
+          <td class="px-5 py-3">
+            <div class="flex items-center gap-3">
+              <a href="{{ url_for('admin.editar_usuario', id=u.id) }}" class="text-xs text-blue-500 hover:underline">Editar</a>
+              {% if u.id != current_user.id %}
+              <form method="POST" action="{{ url_for('admin.deletar_usuario', id=u.id) }}"
+                    onsubmit="return confirm('Deletar {{ u.nome }} e todos os seus dados?')">
+                <button type="submit" class="text-xs text-red-400 hover:text-red-600">Deletar</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="px-5 py-10 text-center text-sm text-gray-400">Nenhum usuário cadastrado.</div>
+  {% endif %}
+</div>
+{% endblock %}

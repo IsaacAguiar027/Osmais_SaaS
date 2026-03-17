@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app
 from flask_login import login_required
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from app.models import Ordem, Cliente
 from app import db
 
@@ -75,6 +76,24 @@ def editar(id):
 @login_required
 def pdf(id):
     ordem = Ordem.query.get_or_404(id)
+    return render_template('ordens/pdf.html', ordem=ordem)
+
+
+@ordens_bp.route('/<int:id>/pdf/compartilhar/<token>')
+def pdf_publico(id, token):
+    """Rota pública para compartilhar PDF via WhatsApp"""
+    ordem = Ordem.query.get_or_404(id)
+    
+    # Validar token (válido por 7 dias)
+    s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    try:
+        # Verifica se o token é válido para essa OS
+        ordem_id_token = s.loads(token, salt='pdf-compartilhar', max_age=7*24*3600)
+        if ordem_id_token != id:
+            return "Acesso negado", 403
+    except (SignatureExpired, BadSignature):
+        return "Link expirado ou inválido", 403
+    
     return render_template('ordens/pdf.html', ordem=ordem)
 
 

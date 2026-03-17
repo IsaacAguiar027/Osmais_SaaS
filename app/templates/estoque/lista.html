@@ -2,13 +2,13 @@
 {% block title %}— Estoque{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-between mb-6">
+<div class="mb-6">
   <h1 class="text-xl font-medium text-gray-800">Estoque</h1>
 </div>
 
-<div class="grid grid-cols-2 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-  <!-- Formulário adicionar / editar -->
+  <!-- Formulário -->
   <div class="bg-white rounded-xl border border-gray-200 p-5">
     {% if editando %}
       <h2 class="text-sm font-medium text-gray-700 mb-4">Editar item</h2>
@@ -26,29 +26,30 @@
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
       </div>
 
-      <div class="mb-3">
-        <label class="block text-xs text-gray-500 mb-1">Quantidade</label>
-        <input type="number" name="quantidade" min="0"
-          value="{{ editando.quantidade if editando else 1 }}"
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-      </div>
-
-      <div class="mb-4">
-        <label class="block text-xs text-gray-500 mb-1">Preço de custo (R$)</label>
-        <input type="number" name="preco_custo" step="0.01"
-          value="{{ editando.preco_custo if editando else '' }}"
-          placeholder="0.00"
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">Quantidade</label>
+          <input type="number" name="quantidade" min="0"
+            value="{{ editando.quantidade if editando else 1 }}"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">Preço de custo (R$)</label>
+          <input type="number" name="preco_custo" step="0.01"
+            value="{{ editando.preco_custo if editando else '' }}"
+            placeholder="0.00"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
       </div>
 
       <div class="flex gap-2">
         <button type="submit"
-          class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors">
+          class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors transition-transform duration-500 ease-in-out hover:scale-110">
           {% if editando %}Salvar alterações{% else %}Adicionar{% endif %}
         </button>
         {% if editando %}
         <a href="{{ url_for('estoque.lista') }}"
-           class="border border-gray-300 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">
+           class="border border-gray-300 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors transition-transform duration-500 ease-in-out hover:scale-110">
           Cancelar
         </a>
         {% endif %}
@@ -56,45 +57,46 @@
     </form>
   </div>
 
-  <!-- Lista de itens -->
+  <!-- Lista -->
   <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
     <div class="px-5 py-4 border-b border-gray-100">
       <h2 class="text-sm font-medium text-gray-700">Itens em estoque</h2>
     </div>
     {% if itens %}
-    <table class="w-full">
-      <thead class="bg-gray-50 text-xs text-gray-500">
-        <tr>
-          <th class="px-4 py-3 text-left">Peça</th>
-          <th class="px-4 py-3 text-left">Qtd</th>
-          <th class="px-4 py-3 text-left">Custo</th>
-          <th class="px-4 py-3"></th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-100">
-        {% for item in itens %}
-        <tr class="hover:bg-gray-50 {% if editando and editando.id == item.id %}bg-blue-50{% endif %}">
-          <td class="px-4 py-3 text-sm text-gray-800">{{ item.nome }}</td>
-          <td class="px-4 py-3 text-sm">
-            <span class="{% if item.quantidade == 0 %}text-red-500 font-medium{% elif item.quantidade <= 2 %}text-yellow-500{% else %}text-gray-700{% endif %}">
-              {{ item.quantidade }}
-            </span>
-          </td>
-          <td class="px-4 py-3 text-sm text-gray-600">R$ {{ '%.2f' % item.preco_custo }}</td>
-          <td class="px-4 py-3">
-            <div class="flex items-center gap-2 justify-end">
-              <a href="{{ url_for('estoque.editar', id=item.id) }}"
-                 class="text-xs text-blue-500 hover:text-blue-700">Editar</a>
-              <form method="POST" action="{{ url_for('estoque.deletar', id=item.id) }}"
-                    onsubmit="return confirm('Remover {{ item.nome }}?')">
-                <button type="submit" class="text-xs text-red-400 hover:text-red-600">Remover</button>
-              </form>
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[320px]">
+        <thead class="bg-gray-50 text-xs text-gray-500">
+          <tr>
+            <th class="px-4 py-3 text-left">Peça</th>
+            <th class="px-4 py-3 text-left">Qtd</th>
+            <th class="px-4 py-3 text-left hidden sm:table-cell">Custo</th>
+            <th class="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          {% for item in itens %}
+          <tr class="hover:bg-gray-50 {% if editando and editando.id == item.id %}bg-blue-50{% endif %}">
+            <td class="px-4 py-3 text-sm text-gray-800">{{ item.nome }}</td>
+            <td class="px-4 py-3 text-sm">
+              <span class="{% if item.quantidade == 0 %}text-red-500 font-medium{% elif item.quantidade <= 2 %}text-yellow-500{% else %}text-gray-700{% endif %}">
+                {{ item.quantidade }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-600 hidden sm:table-cell">R$ {{ '%.2f' % item.preco_custo }}</td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2 justify-end">
+                <a href="{{ url_for('estoque.editar', id=item.id) }}" class="text-xs text-blue-500 hover:text-blue-700">Editar</a>
+                <form method="POST" action="{{ url_for('estoque.deletar', id=item.id) }}"
+                      onsubmit="return confirm('Remover {{ item.nome }}?')">
+                  <button type="submit" class="text-xs text-red-400 hover:text-red-600">Remover</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
     {% else %}
     <div class="px-5 py-8 text-center text-sm text-gray-400">Nenhum item no estoque.</div>
     {% endif %}

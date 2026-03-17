@@ -3,106 +3,131 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OSmais {% block title %}{% endblock %}</title>
+  <title>OS+ {% block title %}{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
   <style>
     body { font-family: 'Inter', sans-serif; }
     .nav-active { background: rgba(74,158,255,0.15); border-right: 2px solid #4A9EFF; color: white; }
+    .sidebar { transition: transform 0.3s ease; }
+    .sidebar-open  { transform: translateX(0) !important; }
+    .sidebar-closed { transform: translateX(-100%); }
+    @media (min-width: 768px) {
+      .sidebar { position: relative !important; transform: translateX(0) !important; width: 13rem !important; }
+      body  { display: flex; }
+      main  { width: 100% !important; }
+      #menu-btn        { display: none !important; }
+      #sidebar-overlay { display: none !important; }
+    }
+    @media (max-width: 767px) {
+      body { flex-direction: column; }
+      .sidebar { position: fixed !important; left: 0 !important; top: 0 !important; z-index: 40; }
+      main { width: 100vw !important; }
+    }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex">
 
-  <!-- Sidebar -->
-  <aside class="w-52 min-h-screen bg-gray-900 flex flex-col fixed left-0 top-0 z-10">
-    <!-- Logo -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden" onclick="toggleSidebar()"></div>
+
+  <aside id="sidebar" class="sidebar w-52 min-h-screen bg-gray-900 flex flex-col sidebar-closed md:relative md:translate-x-0">
     <div class="px-5 py-5 border-b border-white/10">
       <span class="text-white text-base font-medium">{{ current_user.nome_loja }}</span>
-      <p class="text-white/30 text-xs mt-0.5">OSmais</p>
+      <p class="text-white/30 text-xs mt-0.5">OS+</p>
     </div>
 
-    <!-- Nav -->
-    <nav class="flex flex-col mt-3 flex-1">
+    <nav class="flex flex-col mt-3 flex-1 overflow-y-auto">
       <a href="{{ url_for('dashboard.index') }}"
-         class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all
-                {% if request.endpoint == 'dashboard.index' %}nav-active{% endif %}">
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
-          <rect x="1" y="1" width="6" height="6" rx="1"/>
-          <rect x="9" y="1" width="6" height="6" rx="1"/>
-          <rect x="1" y="9" width="6" height="6" rx="1"/>
-          <rect x="9" y="9" width="6" height="6" rx="1"/>
+         class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all {% if request.endpoint == 'dashboard.index' %}nav-active{% endif %}">
+        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16">
+          <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
+          <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
         </svg>
         Dashboard
       </a>
 
+      {% if current_user.is_admin %}
+      <a href="{{ url_for('admin.dashboard') }}"
+         class="flex items-center gap-3 px-5 py-2.5 text-sm text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10 transition-all border-l-2 border-yellow-500/50 {% if request.endpoint and 'admin.' in request.endpoint %}bg-yellow-500/10{% endif %}">
+        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/>
+        </svg>
+        Painel Admin
+      </a>
+      {% endif %}
+
       <a href="{{ url_for('ordens.lista') }}"
-         class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all
-                {% if 'ordens' in request.endpoint %}nav-active{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
-          <rect x="2" y="3" width="12" height="10" rx="1.5"/>
-          <path d="M5 1v4M11 1v4M2 7h12"/>
+         class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all {% if request.endpoint and 'ordens' in request.endpoint %}nav-active{% endif %}">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
+          <rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 1v4M11 1v4M2 7h12"/>
         </svg>
         Ordens de Serviço
       </a>
 
       <a href="{{ url_for('clientes.lista') }}"
-         class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all
-                {% if 'clientes' in request.endpoint %}nav-active{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
-          <circle cx="8" cy="6" r="3"/>
-          <path d="M2 14c0-3.3 2.7-5 6-5s6 1.7 6 5"/>
+         class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all {% if request.endpoint and 'clientes' in request.endpoint %}nav-active{% endif %}">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
+          <circle cx="8" cy="6" r="3"/><path d="M2 14c0-3.3 2.7-5 6-5s6 1.7 6 5"/>
         </svg>
         Clientes
       </a>
 
       <a href="{{ url_for('estoque.lista') }}"
-         class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all
-                {% if 'estoque' in request.endpoint %}nav-active{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
-          <path d="M3 2h10l1 4H2L3 2z"/>
-          <rect x="1" y="6" width="14" height="8" rx="1"/>
+         class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all {% if request.endpoint and 'estoque' in request.endpoint %}nav-active{% endif %}">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
+          <path d="M3 2h10l1 4H2L3 2z"/><rect x="1" y="6" width="14" height="8" rx="1"/>
         </svg>
         Estoque
       </a>
 
-      <!-- Aviso trial/expirado -->
       {% if current_user.plano == 'trial' %}
       <a href="{{ url_for('pagamento.planos') }}"
-         class="mx-3 mb-2 flex items-center gap-2 px-3 py-2 bg-amber-500/20 border border-amber-500/30 rounded-lg text-xs text-amber-300 hover:bg-amber-500/30 transition-all">
+         class="mx-3 mt-2 flex items-center gap-2 px-3 py-2 bg-amber-500/20 border border-amber-500/30 rounded-lg text-xs text-amber-300 hover:bg-amber-500/30 transition-all">
         <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3a.75.75 0 110 1.5A.75.75 0 018 4zm.75 7.75h-1.5v-5h1.5v5z"/></svg>
-        Teste grátis · {{ current_user.dias_restantes }}d restantes
+        Trial · {{ current_user.dias_restantes }}d restantes
       </a>
       {% elif not current_user.acesso_ativo %}
       <a href="{{ url_for('pagamento.planos') }}"
-         class="mx-3 mb-2 flex items-center gap-2 px-3 py-2 bg-red-500/20 border border-red-500/30 rounded-lg text-xs text-red-300 hover:bg-red-500/30 transition-all">
+         class="mx-3 mt-2 flex items-center gap-2 px-3 py-2 bg-red-500/20 border border-red-500/30 rounded-lg text-xs text-red-300 hover:bg-red-500/30 transition-all">
         <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3a.75.75 0 110 1.5A.75.75 0 018 4zm.75 7.75h-1.5v-5h1.5v5z"/></svg>
-        Acesso expirado — assinar
+        Acesso expirado
       </a>
       {% endif %}
 
-      <a href="{{ url_for('auth.perfil') }}"
-         class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all mt-auto
-                {% if request.endpoint == 'auth.perfil' %}nav-active{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
-          <circle cx="8" cy="6" r="3"/><path d="M2 14c0-3.3 2.7-5 6-5s6 1.7 6 5"/>
-        </svg>
-        Meu Perfil
-      </a>
-
-      <a href="{{ url_for('auth.logout') }}"
-         class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/40 hover:text-white hover:bg-white/5 transition-all mb-4">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
-          <path d="M10 3l4 5-4 5M14 8H6M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3"/>
-        </svg>
-        Sair
-      </a>
+      <div class="mt-auto">
+        <a href="https://wa.me/5511999999999" target="_blank"
+           class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
+            <circle cx="8" cy="8" r="6.5"/><path d="M8 5v3M8 11h.01"/>
+          </svg>
+          Suporte
+        </a>
+        <a href="{{ url_for('auth.perfil') }}"
+           class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all {% if request.endpoint == 'auth.perfil' %}nav-active{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
+            <circle cx="8" cy="6" r="3"/><path d="M2 14c0-3.3 2.7-5 6-5s6 1.7 6 5"/>
+          </svg>
+          Meu Perfil
+        </a>
+        <a href="{{ url_for('auth.logout') }}"
+           class="flex items-center gap-3 px-5 py-2.5 mb-4 text-sm text-white/40 hover:text-white hover:bg-white/5 transition-all">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
+            <path d="M10 3l4 5-4 5M14 8H6M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3"/>
+          </svg>
+          Sair
+        </a>
+      </div>
     </nav>
   </aside>
 
-  <!-- Conteúdo principal -->
-  <main class="ml-52 flex-1 p-6">
+  <main class="w-full flex-1 p-4 md:p-6 min-w-0">
+    <button id="menu-btn" class="md:hidden fixed top-3 left-3 z-50 bg-gray-900 text-white p-2 rounded-lg shadow-lg" onclick="toggleSidebar()">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+    <div class="h-10 md:hidden"></div>
 
-    <!-- Alertas flash -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -118,5 +143,26 @@
     {% block content %}{% endblock %}
   </main>
 
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('sidebar-closed');
+      sidebar.classList.toggle('sidebar-open');
+      overlay.classList.toggle('hidden');
+    }
+    document.querySelectorAll('.sidebar a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth < 768) {
+          document.getElementById('sidebar').classList.add('sidebar-closed');
+          document.getElementById('sidebar').classList.remove('sidebar-open');
+          document.getElementById('sidebar-overlay').classList.add('hidden');
+        }
+      });
+    });
+    window.addEventListener('load', () => {
+      if (window.innerWidth < 768) document.getElementById('sidebar').classList.add('sidebar-closed');
+    });
+  </script>
 </body>
 </html>

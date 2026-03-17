@@ -21,6 +21,7 @@ def create_app():
     from app.routes.clientes import clientes_bp
     from app.routes.estoque import estoque_bp
     from app.routes.pagamento import pagamento_bp
+    from app.routes.admin import admin_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -28,6 +29,7 @@ def create_app():
     app.register_blueprint(clientes_bp)
     app.register_blueprint(estoque_bp)
     app.register_blueprint(pagamento_bp)
+    app.register_blueprint(admin_bp)
 
     # Middleware — verifica acesso em cada requisição
     from flask import redirect, url_for, request as freq
@@ -37,7 +39,7 @@ def create_app():
     def verificar_acesso():
         # Rotas liberadas sem assinatura
         liberadas = (
-            "auth.", "pagamento.", "static"
+            "auth.", "pagamento.", "static", "dashboard.landing", "admin."
         )
         endpoint = freq.endpoint or ""
         if any(endpoint.startswith(r) for r in liberadas):

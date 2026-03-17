@@ -197,6 +197,26 @@ def perfil():
                 db.session.commit()
                 flash('Senha alterada com sucesso!', 'sucesso')
 
+        elif acao == 'deletar_conta':
+            senha = request.form.get('senha_confirmacao')
+            if not current_user.check_senha(senha):
+                flash('Senha incorreta. Conta não foi deletada.', 'erro')
+            else:
+                # Deletar todas as ordens do usuário
+                from app.models import Ordem, Cliente
+                Ordem.query.filter_by(cliente_id=Cliente.id).delete(synchronize_session=False)
+                # Deletar todos os clientes do usuário
+                Cliente.query.delete(synchronize_session=False)
+                # Deletar estoque
+                from app.models import Estoque
+                Estoque.query.delete(synchronize_session=False)
+                # Deletar usuário
+                db.session.delete(current_user)
+                db.session.commit()
+                logout_user()
+                flash('Sua conta foi deletada com sucesso.', 'sucesso')
+                return redirect(url_for('dashboard.landing'))
+
         return redirect(url_for('auth.perfil'))
 
     return render_template('auth/perfil.html')

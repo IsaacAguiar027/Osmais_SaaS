@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}— Admin · Editar Usuário{% endblock %}
+
+{% block content %}
+<div class="flex items-center gap-2 mb-6">
+  <a href="{{ url_for('admin.usuarios') }}" class="text-gray-400 hover:text-gray-600 text-sm">← Usuários</a>
+  <span class="text-gray-300">/</span>
+  <h1 class="text-xl font-medium text-gray-800">Editar: {{ usuario.nome }}</h1>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl">
+
+  <!-- Dados do usuário -->
+  <div class="bg-white rounded-xl border border-gray-200 p-6">
+    <h2 class="text-sm font-medium text-gray-700 mb-5">Dados do usuário</h2>
+
+    <form method="POST">
+      <div class="mb-4">
+        <label class="block text-xs text-gray-500 mb-1">Nome</label>
+        <input type="text" name="nome" required value="{{ usuario.nome }}"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div class="mb-4">
+        <label class="block text-xs text-gray-500 mb-1">Nome da loja</label>
+        <input type="text" name="nome_loja" required value="{{ usuario.nome_loja }}"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div class="mb-4">
+        <label class="block text-xs text-gray-500 mb-1">Email</label>
+        <input type="email" name="email" required value="{{ usuario.email }}"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div class="mb-4">
+        <label class="block text-xs text-gray-500 mb-1">Plano</label>
+        <select name="plano"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="trial" {% if usuario.plano == 'trial' %}selected{% endif %}>Trial</option>
+          <option value="mensal" {% if usuario.plano == 'mensal' %}selected{% endif %}>Mensal</option>
+          <option value="anual" {% if usuario.plano == 'anual' %}selected{% endif %}>Anual</option>
+          <option value="expirado" {% if usuario.plano == 'expirado' %}selected{% endif %}>Expirado</option>
+        </select>
+      </div>
+      <div class="mb-5">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" name="is_admin" {% if usuario.is_admin %}checked{% endif %}
+            class="w-4 h-4 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400">
+          <span class="text-sm text-gray-700">Permissão de administrador</span>
+        </label>
+        <p class="text-xs text-gray-400 mt-1 ml-6">Permite acesso ao painel admin.</p>
+      </div>
+      <button type="submit"
+        class="bg-gray-900 text-white px-5 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors">
+        Salvar alterações
+      </button>
+    </form>
+  </div>
+
+  <!-- Ações rápidas -->
+  <div class="space-y-4">
+    <!-- Info plano -->
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+      <h2 class="text-sm font-medium text-gray-700 mb-4">Informações de acesso</h2>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-500">Plano atual</span>
+          <span class="font-medium text-gray-800">{{ usuario.plano|capitalize }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Status</span>
+          {% if usuario.acesso_ativo %}
+            <span class="text-green-600 font-medium">Ativo · {{ usuario.dias_restantes }} dias</span>
+          {% else %}
+            <span class="text-red-500 font-medium">Inativo</span>
+          {% endif %}
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Cadastrado em</span>
+          <span class="text-gray-800">{{ usuario.criado_em.strftime('%d/%m/%Y') }}</span>
+        </div>
+        {% if usuario.trial_expira_em %}
+        <div class="flex justify-between">
+          <span class="text-gray-500">Trial expira</span>
+          <span class="text-gray-800">{{ usuario.trial_expira_em.strftime('%d/%m/%Y') }}</span>
+        </div>
+        {% endif %}
+        {% if usuario.assinatura_expira_em %}
+        <div class="flex justify-between">
+          <span class="text-gray-500">Assinatura expira</span>
+          <span class="text-gray-800">{{ usuario.assinatura_expira_em.strftime('%d/%m/%Y') }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Reset senha -->
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+      <h2 class="text-sm font-medium text-gray-700 mb-2">Resetar senha</h2>
+      <p class="text-xs text-gray-500 mb-4">A senha será redefinida para <strong>123456</strong>. Avise o usuário.</p>
+      <form method="POST" action="{{ url_for('admin.resetar_senha_usuario', id=usuario.id) }}"
+            onsubmit="return confirm('Resetar senha de {{ usuario.nome }} para 123456?')">
+        <button type="submit"
+          class="bg-amber-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-amber-600 transition-colors">
+          Resetar para 123456
+        </button>
+      </form>
+    </div>
+
+    <!-- Deletar usuário -->
+    {% if usuario.id != current_user.id %}
+    <div class="bg-red-50 border border-red-200 rounded-xl p-6">
+      <h2 class="text-sm font-medium text-red-700 mb-2">Zona de perigo</h2>
+      <p class="text-xs text-red-600 mb-4">Deleta o usuário e todos os seus clientes, ordens e dados.</p>
+      <form method="POST" action="{{ url_for('admin.deletar_usuario', id=usuario.id) }}"
+            onsubmit="return confirm('ATENÇÃO: Deletar {{ usuario.nome }} permanentemente?\nIsso remove todos os dados deste usuário.')">
+        <button type="submit"
+          class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700 transition-colors">
+          Deletar usuário
+        </button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
