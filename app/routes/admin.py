@@ -1,143 +1,83 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app
+from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required, current_user
-from app.models import Usuario, Cliente, Ordem
+from app.models import Usuario
 from app import db
+from datetime import datetime, timedelta
+from functools import wraps
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 
 def admin_required(f):
-    """Decorator para verificar se o usuário é admin"""
-    from functools import wraps
     @wraps(f)
-    def decorated_function(*args, **kwargs):
+    def decorated(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_admin:
-            flash('Acesso negado. Apenas administradores podem acessar.', 'erro')
+            flash('Acesso restrito.', 'erro')
             return redirect(url_for('dashboard.index'))
         return f(*args, **kwargs)
-    return decorated_function
+    return decorated
 
 
-@admin_bp.route('/dashboard')
+@admin_bp.route('/')
 @login_required
 @admin_required
-def dashboard():
-    """Dashboard de administrador"""
-    total_usuarios = Usuario.query.count()
-    total_clientes = Cliente.query.count()
-    total_ordens = Ordem.query.count()
+def index():
     usuarios = Usuario.query.order_by(Usuario.criado_em.desc()).all()
-    
-    return render_template('admin/dashboard.html',
-                         total_usuarios=total_usuarios,
-                         total_clientes=total_clientes,
-                         total_ordens=total_ordens,
-                         usuarios=usuarios)
+    total = len(usuarios)
+    ativos = sum(1 for u in usuarios if u.acesso_ativo)
+    pagantes = sum(1 for u in usuarios if u.plano in ('mensal', 'anual'))
+    trials = sum(1 for u in usuarios if u.plano == 'trial' and u.acesso_ativo)
+    return render_template('admin/index.html',
+                           usuarios=usuarios,
+                           total=total,
+                           ativos=ativos,
+                           pagantes=pagantes,
+                           trials=trials)
 
 
-@admin_bp.route('/usuarios')
+@admin_bp.route('/usuario/<int:id>/toggle-ativo', methods=['POST'])
 @login_required
 @admin_required
-def usuarios():
-    """Lista de todos os usuários"""
-    usuarios = Usuario.query.order_by(Usuario.criado_em.desc()).all()
-    return render_template('admin/usuarios.html', usuarios=usuarios)
-
-
-@admin_bp.route('/usuarios/<int:id>/editar', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def editar_usuario(id):
-    """Editar usuário"""
+def toggle_ativo(id):
     usuario = Usuario.query.get_or_404(id)
-    
-    if request.method == 'POST':
-        usuario.nome = request.form.get('nome')
-        usuario.email = request.form.get('email')
-        usuario.nome_loja = request.form.get('nome_loja')
-        usuario.plano = request.form.get('plano')
-        usuario.is_admin = request.form.get('is_admin') == 'on'
-        
-        try:
-            db.session.commit()
-            flash(f'Usuário {usuario.nome} atualizado com sucesso!', 'sucesso')
-            return redirect(url_for('admin.usuarios'))
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Erro ao atualizar usuário: {str(e)}', 'erro')
-    
-    return render_template('admin/editar_usuario.html', usuario=usuario)
-
-
-@admin_bp.route('/usuarios/<int:id>/deletar', methods=['POST'])
-@login_required
-@admin_required
-def deletar_usuario(id):
-    """Deletar usuário e todos os seus dados"""
-    usuario = Usuario.query.get_or_404(id)
-    
-    # Não permitir deletar a si mesmo
     if usuario.id == current_user.id:
-        flash('Você não pode deletar sua própria conta!', 'erro')
-        return redirect(url_for('admin.usuarios'))
-    
-    nome_usuario = usuario.nome
-    email = usuario.email
-    
-    try:
-        # Deletar ordens do usuário (através dos clientes)
-        clientes = Cliente.query.filter_by(usuario_id=usuario.id).all()
-        for cliente in clientes:
-            Ordem.query.filter_by(cliente_id=cliente.id).delete()
-        
-        # Deletar clientes
-        Cliente.query.filter_by(usuario_id=usuario.id).delete()
-        
-        # Deletar usuário
-        db.session.delete(usuario)
-        db.session.commit()
-        
-        flash(f'Usuário {nome_usuario} ({email}) deletado com sucesso!', 'sucesso')
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Erro ao deletar usuário: {str(e)}', 'erro')
-    
-    return redirect(url_for('admin.usuarios'))
+        flash('Você não pode desativar sua própria conta.', 'erro')
+        return redirect(url_for('admin.index'))
+
+    # Desativar = expirar o acesso agora
+    # Ativar = dar mais 30 dias de trial
+    if usuario.acesso_ativo:
+        usuario.trial_expira_em = datetime.utcnow() - timedelta(days=1)
+        usuario.assinatura_expira_em = datetime.utcnow() - timedelta(days=1)
+        flash(f'Conta de {usuario.nome} desativada.', 'sucesso')
+    else:
+        usuario.plano = 'trial'
+        usuario.trial_expira_em = datetime.utcnow() + timedelta(days=30)
+        flash(f'Conta de {usuario.nome} reativada com 30 dias.', 'sucesso')
+
+    db.session.commit()
+    return redirect(url_for('admin.index'))
 
 
-@admin_bp.route('/usuarios/<int:id>/resetar-senha', methods=['POST'])
+@admin_bp.route('/usuario/<int:id>/alterar-plano', methods=['POST'])
 @login_required
 @admin_required
-def resetar_senha_usuario(id):
-    """Resetar senha de um usuário para 123456"""
+def alterar_plano(id):
     usuario = Usuario.query.get_or_404(id)
-    
-    try:
-        nova_senha = '123456'
-        usuario.set_senha(nova_senha)
-        db.session.commit()
-        
-        flash(f'Senha de {usuario.nome} foi resetada para: {nova_senha}', 'sucesso')
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Erro ao resetar senha: {str(e)}', 'erro')
-    
-    return redirect(url_for('admin.editar_usuario', id=usuario.id))
+    plano = request.form.get('plano')
+    dias = int(request.form.get('dias', 30))
 
+    usuario.plano = plano
+    expira = datetime.utcnow() + timedelta(days=dias)
 
-@admin_bp.route('/clientes')
-@login_required
-@admin_required
-def clientes():
-    """Lista de todos os clientes"""
-    clientes = Cliente.query.all()
-    return render_template('admin/clientes.html', clientes=clientes)
+    if plano == 'trial':
+        usuario.trial_expira_em = expira
+    elif plano in ('mensal', 'anual'):
+        usuario.assinatura_expira_em = expira
+    elif plano == 'expirado':
+        usuario.trial_expira_em = datetime.utcnow() - timedelta(days=1)
+        usuario.assinatura_expira_em = datetime.utcnow() - timedelta(days=1)
 
-
-@admin_bp.route('/ordens')
-@login_required
-@admin_required
-def ordens():
-    """Lista de todas as ordens"""
-    ordens = Ordem.query.order_by(Ordem.criado_em.desc()).all()
-    return render_template('admin/ordens.html', ordens=ordens)
+    db.session.commit()
+    flash(f'Plano de {usuario.nome} alterado para {plano}.', 'sucesso')
+    return redirect(url_for('admin.index'))

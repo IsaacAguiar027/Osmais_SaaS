@@ -13,7 +13,6 @@ class Usuario(UserMixin, db.Model):
     senha_hash = db.Column(db.String(200), nullable=False)
     criado_em = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Admin
     is_admin = db.Column(db.Boolean, default=False)
 
     # Assinatura
@@ -61,7 +60,6 @@ class Cliente(db.Model):
     __tablename__ = 'clientes'
 
     id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
     nome = db.Column(db.String(100), nullable=False)
     telefone = db.Column(db.String(20))
     email = db.Column(db.String(120))

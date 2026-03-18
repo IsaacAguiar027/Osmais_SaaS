@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}— Admin{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-xl font-medium text-gray-800">Painel Admin</h1>
+    <p class="text-xs text-gray-400 mt-0.5">Gestão de usuários e assinaturas</p>
+  </div>
+</div>
+
+<!-- Métricas -->
+<div class="grid grid-cols-4 gap-4 mb-6">
+  <div class="bg-white rounded-xl p-5 border border-gray-200">
+    <p class="text-xs text-gray-500 mb-2">Total de contas</p>
+    <p class="text-3xl font-medium text-gray-800">{{ total }}</p>
+  </div>
+  <div class="bg-white rounded-xl p-5 border border-gray-200">
+    <p class="text-xs text-gray-500 mb-2">Acessos ativos</p>
+    <p class="text-3xl font-medium text-green-600">{{ ativos }}</p>
+  </div>
+  <div class="bg-white rounded-xl p-5 border border-gray-200">
+    <p class="text-xs text-gray-500 mb-2">Pagantes</p>
+    <p class="text-3xl font-medium text-blue-600">{{ pagantes }}</p>
+  </div>
+  <div class="bg-white rounded-xl p-5 border border-gray-200">
+    <p class="text-xs text-gray-500 mb-2">Em trial</p>
+    <p class="text-3xl font-medium text-amber-600">{{ trials }}</p>
+  </div>
+</div>
+
+<!-- Tabela de usuários -->
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+  <div class="px-5 py-4 border-b border-gray-100">
+    <h2 class="text-sm font-medium text-gray-700">Todos os usuários</h2>
+  </div>
+
+  <table class="w-full">
+    <thead class="bg-gray-50 text-xs text-gray-500">
+      <tr>
+        <th class="px-5 py-3 text-left">Nome / Loja</th>
+        <th class="px-5 py-3 text-left">Email</th>
+        <th class="px-5 py-3 text-left">Plano</th>
+        <th class="px-5 py-3 text-left">Expira em</th>
+        <th class="px-5 py-3 text-left">Cadastro</th>
+        <th class="px-5 py-3 text-left">Ações</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for u in usuarios %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-5 py-3">
+          <p class="text-sm font-medium text-gray-800">{{ u.nome_loja }}</p>
+          <p class="text-xs text-gray-400">{{ u.nome }}</p>
+        </td>
+        <td class="px-5 py-3 text-sm text-gray-600">{{ u.email }}</td>
+        <td class="px-5 py-3">
+          {% if u.plano == 'trial' and u.acesso_ativo %}
+            <span class="px-2 py-1 rounded-full text-xs bg-amber-100 text-amber-700">Trial · {{ u.dias_restantes }}d</span>
+          {% elif u.plano == 'mensal' and u.acesso_ativo %}
+            <span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">Mensal</span>
+          {% elif u.plano == 'anual' and u.acesso_ativo %}
+            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">Anual</span>
+          {% else %}
+            <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">Expirado</span>
+          {% endif %}
+          {% if u.is_admin %}
+            <span class="ml-1 px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">Admin</span>
+          {% endif %}
+        </td>
+        <td class="px-5 py-3 text-xs text-gray-500">
+          {% if u.plano == 'trial' and u.trial_expira_em %}
+            {{ u.trial_expira_em.strftime('%d/%m/%Y') }}
+          {% elif u.assinatura_expira_em %}
+            {{ u.assinatura_expira_em.strftime('%d/%m/%Y') }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td class="px-5 py-3 text-xs text-gray-400">{{ u.criado_em.strftime('%d/%m/%Y') }}</td>
+        <td class="px-5 py-3">
+          <div class="flex items-center gap-2">
+
+            <!-- Alterar plano -->
+            <form method="POST" action="{{ url_for('admin.alterar_plano', id=u.id) }}" class="flex items-center gap-1">
+              <select name="plano" class="text-xs border border-gray-200 rounded px-1.5 py-1 focus:outline-none">
+                <option value="trial"    {% if u.plano == 'trial' %}selected{% endif %}>Trial</option>
+                <option value="mensal"   {% if u.plano == 'mensal' %}selected{% endif %}>Mensal</option>
+                <option value="anual"    {% if u.plano == 'anual' %}selected{% endif %}>Anual</option>
+                <option value="expirado" {% if not u.acesso_ativo %}selected{% endif %}>Expirado</option>
+              </select>
+              <input type="number" name="dias" value="30" min="1" max="365"
+                class="text-xs border border-gray-200 rounded px-1.5 py-1 w-14 focus:outline-none">
+              <button type="submit" class="text-xs text-blue-500 hover:text-blue-700 font-medium">Salvar</button>
+            </form>
+
+            <!-- Ativar/Desativar -->
+            <form method="POST" action="{{ url_for('admin.toggle_ativo', id=u.id) }}"
+                  onsubmit="return confirm('Confirmar ação para {{ u.nome }}?')">
+              {% if u.acesso_ativo %}
+                <button type="submit" class="text-xs text-red-400 hover:text-red-600">Desativar</button>
+              {% else %}
+                <button type="submit" class="text-xs text-green-500 hover:text-green-700">Ativar</button>
+              {% endif %}
+            </form>
+
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

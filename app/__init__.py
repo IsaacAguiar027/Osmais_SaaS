@@ -31,11 +31,13 @@ def create_app():
     app.register_blueprint(pagamento_bp)
     app.register_blueprint(admin_bp)
 
+    # Middleware — verifica acesso em cada requisição
     from flask import redirect, url_for, request as freq
     from flask_login import current_user
 
     @app.before_request
     def verificar_acesso():
+        # Rotas liberadas sem assinatura
         liberadas = (
             "auth.", "pagamento.", "static", "dashboard.landing", "admin."
         )
@@ -49,28 +51,5 @@ def create_app():
 
     with app.app_context():
         db.create_all()
-
-        # Migrações
-        from sqlalchemy import text
-        try:
-            with db.engine.connect() as conn:
-                conn.execute(text("ALTER TABLE usuarios ADD COLUMN is_admin BOOLEAN DEFAULT 0"))
-                conn.commit()
-        except Exception:
-            pass
-
-        try:
-            with db.engine.connect() as conn:
-                conn.execute(text("ALTER TABLE clientes ADD COLUMN usuario_id INTEGER REFERENCES usuarios(id)"))
-                conn.commit()
-        except Exception:
-            pass
-
-        # Garante admin
-        from app.models import Usuario
-        admin = Usuario.query.filter_by(email='isaac_aguiar027@outlook.com').first()
-        if admin:
-            admin.is_admin = True
-            db.session.commit()
 
     return app
