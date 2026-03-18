@@ -204,39 +204,3 @@ def perfil():
         return redirect(url_for('auth.perfil'))
 
     return render_template('auth/perfil.html')
-
-
-@auth_bp.route('/listar-usuarios-secreto')
-def listar_usuarios_secreto():
-    token = request.args.get('token')
-    secret = os.environ.get('ADMIN_SECRET_TOKEN', '')
-    if not secret or token != secret:
-        return 'Não autorizado', 403
-    usuarios = Usuario.query.all()
-    resultado = '<br>'.join([f'{u.id} | {u.email} | admin={u.is_admin}' for u in usuarios])
-    return resultado or 'Nenhum usuário encontrado'
-
-
-@auth_bp.route('/set-admin-secreto')
-def set_admin_secreto():
-    """Rota secreta para definir admin em produção — só funciona com token correto"""
-    token = request.args.get('token')
-    secret = os.environ.get('ADMIN_SECRET_TOKEN', '')
-    if not secret or token != secret:
-        return 'Não autorizado', 403
-    email = os.environ.get('ADMIN_EMAIL')
-    if not email:
-        return 'ADMIN_EMAIL não configurado', 400
-    import sqlalchemy as sa
-    with db.engine.connect() as conn:
-        try:
-            conn.execute(sa.text('ALTER TABLE usuarios ADD COLUMN is_admin BOOLEAN DEFAULT 0'))
-            conn.commit()
-        except:
-            pass
-    u = Usuario.query.filter_by(email=email).first()
-    if not u:
-        return f'Usuário {email} não encontrado', 404
-    u.is_admin = True
-    db.session.commit()
-    return f'Admin ativado para {email}!', 200
