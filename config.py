@@ -3,13 +3,25 @@ import os
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'osmais-dev-secret-key-2024'
 
-    # Em produção usa PostgreSQL (Railway), em desenvolvimento usa SQLite
+    # Lógica do banco:
+    # 1. Se tiver DATABASE_URL (PostgreSQL) usa ele
+    # 2. Se estiver no Railway (tem volume /data) usa /data/osmais.db
+    # 3. Senão usa SQLite local (desenvolvimento)
     DATABASE_URL = os.environ.get('DATABASE_URL')
     if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
         DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
 
-    SQLALCHEMY_DATABASE_URI = DATABASE_URL or \
-        'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'osmais.db')
+    if DATABASE_URL:
+        SQLALCHEMY_DATABASE_URI = DATABASE_URL
+    elif os.path.isdir('/data'):
+        # Volume do Railway
+        SQLALCHEMY_DATABASE_URI = 'sqlite:////data/osmais.db'
+    else:
+        # Desenvolvimento local
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(
+            os.path.abspath(os.path.dirname(__file__)), 'osmais.db'
+        )
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Email
