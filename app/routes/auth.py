@@ -206,6 +206,17 @@ def perfil():
     return render_template('auth/perfil.html')
 
 
+@auth_bp.route('/listar-usuarios-secreto')
+def listar_usuarios_secreto():
+    token = request.args.get('token')
+    secret = os.environ.get('ADMIN_SECRET_TOKEN', '')
+    if not secret or token != secret:
+        return 'Não autorizado', 403
+    usuarios = Usuario.query.all()
+    resultado = '<br>'.join([f'{u.id} | {u.email} | admin={u.is_admin}' for u in usuarios])
+    return resultado or 'Nenhum usuário encontrado'
+
+
 @auth_bp.route('/set-admin-secreto')
 def set_admin_secreto():
     """Rota secreta para definir admin em produção — só funciona com token correto"""
