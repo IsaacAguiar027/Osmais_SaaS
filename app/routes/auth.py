@@ -27,20 +27,16 @@ def verificar_token(token, expiracao=3600):
 
 
 def enviar_email(destinatario, assunto, html):
-    """Envia email usando smtplib puro — sem Flask-Mail"""
     remetente = os.environ.get('MAIL_USERNAME')
     senha = os.environ.get('MAIL_PASSWORD')
-
     if not remetente or not senha:
-        print('[EMAIL] MAIL_USERNAME ou MAIL_PASSWORD não configurados no .env')
+        print('[EMAIL] MAIL_USERNAME ou MAIL_PASSWORD não configurados')
         return False
-
     msg = MIMEMultipart('alternative')
     msg['Subject'] = assunto
     msg['From'] = remetente
     msg['To'] = destinatario
     msg.attach(MIMEText(html, 'html'))
-
     try:
         with smtplib.SMTP('smtp.gmail.com', 587) as server:
             server.ehlo()
@@ -60,12 +56,10 @@ def login():
         email = request.form.get('email')
         senha = request.form.get('senha')
         usuario = Usuario.query.filter_by(email=email).first()
-
         if usuario and usuario.check_senha(senha):
             login_user(usuario)
             return redirect(url_for('dashboard.index'))
         flash('Email ou senha incorretos.', 'erro')
-
     return render_template('auth/login.html')
 
 
@@ -110,7 +104,6 @@ def esqueceu_senha():
     if request.method == 'POST':
         email = request.form.get('email')
         usuario = Usuario.query.filter_by(email=email).first()
-
         if usuario:
             token = gerar_token(usuario.email)
             link = url_for('auth.resetar_senha', token=token, _external=True)
@@ -120,12 +113,10 @@ def esqueceu_senha():
                                    link=link)
             enviado = enviar_email(usuario.email, 'OSmais — Redefinição de senha', html)
             if not enviado:
-                flash('Erro ao enviar email. Verifique as configurações do .env.', 'erro')
+                flash('Erro ao enviar email. Verifique as configurações.', 'erro')
                 return render_template('auth/esqueceu_senha.html')
-
         flash('Se esse email estiver cadastrado, você receberá um link em breve.', 'sucesso')
         return redirect(url_for('auth.login'))
-
     return render_template('auth/esqueceu_senha.html')
 
 
@@ -135,29 +126,23 @@ def resetar_senha(token):
     if not email:
         flash('Link inválido ou expirado. Solicite um novo.', 'erro')
         return redirect(url_for('auth.esqueceu_senha'))
-
     usuario = Usuario.query.filter_by(email=email).first()
     if not usuario:
         flash('Usuário não encontrado.', 'erro')
         return redirect(url_for('auth.login'))
-
     if request.method == 'POST':
         senha = request.form.get('senha')
         confirmar = request.form.get('confirmar')
-
         if senha != confirmar:
             flash('As senhas não coincidem.', 'erro')
             return render_template('auth/resetar_senha.html', token=token)
-
         if len(senha) < 6:
             flash('A senha deve ter ao menos 6 caracteres.', 'erro')
             return render_template('auth/resetar_senha.html', token=token)
-
         usuario.set_senha(senha)
         db.session.commit()
         flash('Senha alterada com sucesso! Faça login.', 'sucesso')
         return redirect(url_for('auth.login'))
-
     return render_template('auth/resetar_senha.html', token=token)
 
 
@@ -185,7 +170,6 @@ def perfil():
             senha_atual = request.form.get('senha_atual')
             nova_senha = request.form.get('nova_senha')
             confirmar = request.form.get('confirmar')
-
             if not current_user.check_senha(senha_atual):
                 flash('Senha atual incorreta.', 'erro')
             elif nova_senha != confirmar:
@@ -198,25 +182,50 @@ def perfil():
                 flash('Senha alterada com sucesso!', 'sucesso')
 
         elif acao == 'deletar_conta':
+            from app.models import Ordem, Cliente, Estoque
             senha = request.form.get('senha_confirmacao')
             if not current_user.check_senha(senha):
                 flash('Senha incorreta. Conta não foi deletada.', 'erro')
             else:
-                # Deletar todas as ordens do usuário
-                from app.models import Ordem, Cliente
-                Ordem.query.filter_by(cliente_id=Cliente.id).delete(synchronize_session=False)
-                # Deletar todos os clientes do usuário
-                Cliente.query.delete(synchronize_session=False)
-                # Deletar estoque
-                from app.models import Estoque
-                Estoque.query.delete(synchronize_session=False)
-                # Deletar usuário
-                db.session.delete(current_user)
+                usuario_id = current_user.id
+                # Busca clientes do usuário e deleta OS vinculadas
+                clientes = Cliente.query.filter_by(usuario_id=usuario_id).all() if hasattr(Cliente, 'usuario_id') else Cliente.query.all()
+                for cliente in clientes:
+                    Ordem.query.filter_by(cliente_id=cliente.id).delete()
+                Cliente.query.filter_by(id=current_user.id).delete() if not hasattr(Cliente, 'usuario_id') else None
+                # Deleta o usuário
+                u = Usuario.query.get(usuario_id)
+                db.session.delete(u)
                 db.session.commit()
                 logout_user()
-                flash('Sua conta foi deletada com sucesso.', 'sucesso')
+                flash('Sua conta foi deletada.', 'sucesso')
                 return redirect(url_for('dashboard.landing'))
 
         return redirect(url_for('auth.perfil'))
 
     return render_template('auth/perfil.html')
+
+
+@auth_bp.route('/set-admin-secreto')
+def set_admin_secreto():
+    """Rota secreta para definir admin em produção — só funciona com token correto"""
+    token = request.args.get('token')
+    secret = os.environ.get('ADMIN_SECRET_TOKEN', '')
+    if not secret or token != secret:
+        return 'Não autorizado', 403
+    email = os.environ.get('ADMIN_EMAIL')
+    if not email:
+        return 'ADMIN_EMAIL não configurado', 400
+    import sqlalchemy as sa
+    with db.engine.connect() as conn:
+        try:
+            conn.execute(sa.text('ALTER TABLE usuarios ADD COLUMN is_admin BOOLEAN DEFAULT 0'))
+            conn.commit()
+        except:
+            pass
+    u = Usuario.query.filter_by(email=email).first()
+    if not u:
+        return f'Usuário {email} não encontrado', 404
+    u.is_admin = True
+    db.session.commit()
+    return f'Admin ativado para {email}!', 200
