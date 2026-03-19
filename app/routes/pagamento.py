@@ -36,9 +36,9 @@ def mp_criar_preferencia(plano, usuario_id, email):
         'payer': {'email': email},
         'external_reference': f'{usuario_id}:{plano}',
         'back_urls': {
-            'success': f'{base_url}/pagamento/aguardando.html',
+            'success': f'{base_url}/pagamento/aguardando',
             'failure': f'{base_url}/pagamento/falha.html',
-            'pending': f'{base_url}/pagamento/aguardando.html'
+            'pending': f'{base_url}/pagamento/aguardando'
         },
         'auto_return': 'approved',
         'notification_url': f'{base_url}/pagamento/webhook'
