@@ -36,9 +36,9 @@ def mp_criar_preferencia(plano, usuario_id, email):
         'payer': {'email': email},
         'external_reference': f'{usuario_id}:{plano}',
         'back_urls': {
-            'success': f'{base_url}/pagamento/aguardando',
-            'failure': f'{base_url}/pagamento/falha',
-            'pending': f'{base_url}/pagamento/aguardando'
+            'success': f'{base_url}/pagamento/aguardando.html',
+            'failure': f'{base_url}/pagamento/falha.html',
+            'pending': f'{base_url}/pagamento/aguardando.html'
         },
         'auto_return': 'approved',
         'notification_url': f'{base_url}/pagamento/webhook'
@@ -186,6 +186,10 @@ def falha():
 def pendente():
     return render_template('pagamento/pendente.html')
 
+@pagamento_bp.route('/aguardando')
+@login_required
+def aguardando():
+    return render_template('pagamento/aguardando.html')
 
 @pagamento_bp.route('/webhook', methods=['POST'])
 def webhook():
