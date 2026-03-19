@@ -28,6 +28,6 @@ Thumbs.db
 
 # Logs
 *.log
-
+ngrok.exe
 # Uploads futuros (quando tiver)
 app/static/uploads/

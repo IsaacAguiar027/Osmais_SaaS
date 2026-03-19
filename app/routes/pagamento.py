@@ -135,6 +135,10 @@ def assinar(plano):
         return redirect(resultado['init_point'])
 
     # Plano avulso (mensal ou anual)
+    # 🔥 salva o plano escolhido antes de pagar
+    current_user.plano = plano
+    db.session.commit()
+
     resultado = mp_criar_preferencia(plano, current_user.id, current_user.email)
 
     if not resultado:
@@ -174,6 +178,27 @@ def sucesso():
 
     return render_template('pagamento/sucesso.html')
 
+@pagamento_bp.route('/detalhes')
+@login_required
+def detalhes_pagamento():
+    usuario = Usuario.query.get(current_user.id)
+
+    if not usuario:
+        return jsonify({'erro': 'Usuário não encontrado'})
+
+    # Define nome do plano
+    plano_nome = 'Mensal' if usuario.plano == 'mensal' else 'Anual'
+
+    # Define valor
+    if usuario.plano == 'mensal':
+        valor = float(os.environ.get('MP_PRECO_MENSAL', 29))
+    else:
+        valor = float(os.environ.get('MP_PRECO_ANUAL', 300))
+
+    return jsonify({
+        'plano': plano_nome,
+        'valor': valor
+    })
 
 @pagamento_bp.route('/falha')
 def falha():
