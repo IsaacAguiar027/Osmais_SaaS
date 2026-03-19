@@ -1,0 +1,17 @@
+<h2>🔄 Aguardando pagamento...</h2>
+<p>Assim que o pagamento for confirmado, você será liberado automaticamente.</p>
+
+<script>
+setInterval(async () => {
+  try {
+    const res = await fetch('/pagamento/status');
+    const data = await res.json();
+
+    if (data.status === 'aprovado') {
+      window.location.href = '/dashboard'; // MUDA SE PRECISAR
+    }
+  } catch (e) {
+    console.log('Erro ao verificar pagamento');
+  }
+}, 3000);
+</script>

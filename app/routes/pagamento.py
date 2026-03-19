@@ -36,9 +36,9 @@ def mp_criar_preferencia(plano, usuario_id, email):
         'payer': {'email': email},
         'external_reference': f'{usuario_id}:{plano}',
         'back_urls': {
-            'success': f'{base_url}/pagamento/sucesso',
+            'success': f'{base_url}/pagamento/aguardando',
             'failure': f'{base_url}/pagamento/falha',
-            'pending': f'{base_url}/pagamento/pendente'
+            'pending': f'{base_url}/pagamento/aguardando'
         },
         'auto_return': 'approved',
         'notification_url': f'{base_url}/pagamento/webhook'
@@ -142,6 +142,17 @@ def assinar(plano):
         return redirect(url_for('pagamento.planos'))
 
     return redirect(resultado['init_point'])
+
+@pagamento_bp.route('/status')
+@login_required
+def status_pagamento():
+    usuario = Usuario.query.get(current_user.id)
+
+    if usuario and usuario.assinatura_expira_em:
+        if usuario.assinatura_expira_em > datetime.utcnow():
+            return jsonify({'status': 'aprovado'})
+
+    return jsonify({'status': 'pendente'})
 
 
 @pagamento_bp.route('/sucesso')
