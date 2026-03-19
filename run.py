@@ -27,6 +27,7 @@ with app.app_context():
             "ALTER TABLE usuarios ADD COLUMN is_admin BOOLEAN DEFAULT 0",
             "ALTER TABLE usuarios ADD COLUMN nome_loja VARCHAR(100) DEFAULT 'Minha Assistencia'",
             "ALTER TABLE usuarios ADD COLUMN plano VARCHAR(20) DEFAULT 'trial'",
+            "ALTER TABLE usuarios ADD COLUMN is_admin BOOLEAN DEFAULT 0",  -- already handled above
             "ALTER TABLE usuarios ADD COLUMN trial_expira_em DATETIME",
             "ALTER TABLE usuarios ADD COLUMN assinatura_expira_em DATETIME",
             "ALTER TABLE usuarios ADD COLUMN mp_payment_id VARCHAR(100)",

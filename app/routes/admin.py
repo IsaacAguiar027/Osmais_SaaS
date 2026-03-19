@@ -25,7 +25,7 @@ def index():
     usuarios = Usuario.query.order_by(Usuario.criado_em.desc()).all()
     total = len(usuarios)
     ativos = sum(1 for u in usuarios if u.acesso_ativo)
-    pagantes = sum(1 for u in usuarios if u.plano in ('mensal', 'anual'))
+    pagantes = sum(1 for u in usuarios if u.plano in ('mensal', 'semestral', 'anual'))
     trials = sum(1 for u in usuarios if u.plano == 'trial' and u.acesso_ativo)
     return render_template('admin/index.html',
                            usuarios=usuarios,
@@ -72,7 +72,7 @@ def alterar_plano(id):
 
     if plano == 'trial':
         usuario.trial_expira_em = expira
-    elif plano in ('mensal', 'anual'):
+    elif plano in ('mensal', 'semestral', 'anual'):
         usuario.assinatura_expira_em = expira
     elif plano == 'expirado':
         usuario.trial_expira_em = datetime.utcnow() - timedelta(days=1)

@@ -4,18 +4,57 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OSmais {% block title %}{% endblock %}</title>
-  <link rel="shortcut icon" href="../static/img/osmais.favicon.png" type="image/x-icon">
+  <link rel="shortcut icon" href="/static/img/osmais.favicon.png" type="image/x-icon">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
   <style>
     body { font-family: 'Inter', sans-serif; }
     .nav-active { background: rgba(74,158,255,0.15); border-right: 2px solid #4A9EFF; color: white; }
+
+    /* ── Mobile sidebar overlay ── */
+    #sidebar-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 20;
+    }
+    #sidebar-overlay.open { display: block; }
+
+    /* ── Sidebar off-canvas no mobile ── */
+    @media (max-width: 767px) {
+      #sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        z-index: 30;
+      }
+      #sidebar.open { transform: translateX(0); }
+      #main-content { margin-left: 0 !important; }
+      #topbar { display: flex; }
+    }
+    @media (min-width: 768px) {
+      #topbar { display: none; }
+      #sidebar { transform: translateX(0) !important; }
+    }
   </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex">
+<body class="bg-gray-100 min-h-screen">
+
+  <!-- Overlay mobile -->
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- Topbar mobile -->
+  <header id="topbar" class="fixed top-0 left-0 right-0 h-14 bg-gray-900 flex items-center justify-between px-4 z-10 border-b border-white/10">
+    <button onclick="openSidebar()" class="text-white/70 hover:text-white p-1">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+    <span class="text-white font-medium text-sm">{{ current_user.nome_loja }}</span>
+    <a href="{{ url_for('auth.logout') }}" class="text-white/40 hover:text-white/80 text-xs">Sair</a>
+  </header>
 
   <!-- Sidebar -->
-  <aside class="w-52 min-h-screen bg-gray-900 flex flex-col fixed left-0 top-0 z-10">
+  <aside id="sidebar" class="w-52 min-h-screen bg-gray-900 flex flex-col fixed left-0 top-0">
     <!-- Logo -->
     <div class="px-5 py-5 border-b border-white/10">
       <span class="text-white text-base font-medium">{{ current_user.nome_loja }}</span>
@@ -23,11 +62,11 @@
     </div>
 
     <!-- Nav -->
-    <nav class="flex flex-col mt-3 flex-1">
-      <a href="{{ url_for('dashboard.index') }}"
+    <nav class="flex flex-col mt-3 flex-1 overflow-y-auto">
+      <a href="{{ url_for('dashboard.index') }}" onclick="closeSidebar()"
          class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all
                 {% if request.endpoint == 'dashboard.index' %}nav-active{% endif %}">
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
+        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16">
           <rect x="1" y="1" width="6" height="6" rx="1"/>
           <rect x="9" y="1" width="6" height="6" rx="1"/>
           <rect x="1" y="9" width="6" height="6" rx="1"/>
@@ -36,49 +75,50 @@
         Dashboard
       </a>
 
-      <a href="{{ url_for('ordens.lista') }}"
+      <a href="{{ url_for('ordens.lista') }}" onclick="closeSidebar()"
          class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all
-                {% if 'ordens' in request.endpoint %}nav-active{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
+                {% if 'ordens' in (request.endpoint or '') %}nav-active{% endif %}">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
           <rect x="2" y="3" width="12" height="10" rx="1.5"/>
           <path d="M5 1v4M11 1v4M2 7h12"/>
         </svg>
         Ordens de Serviço
       </a>
 
-      <a href="{{ url_for('clientes.lista') }}"
+      <a href="{{ url_for('clientes.lista') }}" onclick="closeSidebar()"
          class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all
-                {% if 'clientes' in request.endpoint %}nav-active{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
+                {% if 'clientes' in (request.endpoint or '') %}nav-active{% endif %}">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
           <circle cx="8" cy="6" r="3"/>
           <path d="M2 14c0-3.3 2.7-5 6-5s6 1.7 6 5"/>
         </svg>
         Clientes
       </a>
 
-      <a href="{{ url_for('estoque.lista') }}"
+      <a href="{{ url_for('estoque.lista') }}" onclick="closeSidebar()"
          class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all
-                {% if 'estoque' in request.endpoint %}nav-active{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
+                {% if 'estoque' in (request.endpoint or '') %}nav-active{% endif %}">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
           <path d="M3 2h10l1 4H2L3 2z"/>
           <rect x="1" y="6" width="14" height="8" rx="1"/>
         </svg>
         Estoque
       </a>
 
-      <!-- Info do plano na sidebar -->
-      <div class="mx-3 mb-2 px-3 py-2 rounded-lg border text-xs
+      <!-- Info do plano -->
+      <div class="mx-3 my-2 px-3 py-2 rounded-lg border text-xs
         {% if current_user.plano == 'trial' %}bg-amber-500/10 border-amber-500/20
-        {% elif current_user.plano in ('mensal', 'anual') and current_user.acesso_ativo %}bg-green-500/10 border-green-500/20
+        {% elif current_user.plano in ('mensal', 'semestral', 'anual') and current_user.acesso_ativo %}bg-green-500/10 border-green-500/20
         {% else %}bg-red-500/10 border-red-500/20{% endif %}">
 
         <div class="flex items-center justify-between mb-1">
           <span class="font-medium
             {% if current_user.plano == 'trial' %}text-amber-300
-            {% elif current_user.plano in ('mensal', 'anual') and current_user.acesso_ativo %}text-green-300
+            {% elif current_user.plano in ('mensal', 'semestral', 'anual') and current_user.acesso_ativo %}text-green-300
             {% else %}text-red-300{% endif %}">
             {% if current_user.plano == 'trial' %}Teste grátis
             {% elif current_user.plano == 'mensal' %}Plano Mensal
+            {% elif current_user.plano == 'semestral' %}Plano Semestral
             {% elif current_user.plano == 'anual' %}Plano Anual
             {% else %}Expirado{% endif %}
           </span>
@@ -90,33 +130,34 @@
         {% if current_user.acesso_ativo %}
           <div class="w-full bg-white/10 rounded-full h-1 mb-1.5">
             {% if current_user.plano == 'trial' %}
-              {% set pct = (current_user.dias_restantes / 30 * 100) | int %}
+              {% set pct = (current_user.dias_restantes / 7 * 100) | int %}
             {% elif current_user.plano == 'mensal' %}
               {% set pct = (current_user.dias_restantes / 30 * 100) | int %}
+            {% elif current_user.plano == 'semestral' %}
+              {% set pct = (current_user.dias_restantes / 180 * 100) | int %}
             {% else %}
               {% set pct = (current_user.dias_restantes / 365 * 100) | int %}
             {% endif %}
             <div class="h-1 rounded-full
               {% if current_user.plano == 'trial' %}bg-amber-400
               {% else %}bg-green-400{% endif %}"
-              style="width: {{ pct if pct <= 100 else 100 }}%"></div>
+              style="width: {{ [pct, 100] | min }}%"></div>
           </div>
           <a href="{{ url_for('pagamento.planos') }}" class="text-white/30 hover:text-white/60 transition-colors">
             {% if current_user.plano == 'trial' %}Assinar agora{% else %}Renovar plano{% endif %}
           </a>
         {% else %}
-          <a href="{{ url_for('pagamento.planos') }}"
-             class="text-red-300 hover:text-red-100 transition-colors font-medium">
+          <a href="{{ url_for('pagamento.planos') }}" class="text-red-300 hover:text-red-100 transition-colors font-medium">
             Renovar acesso →
           </a>
         {% endif %}
       </div>
 
       {% if current_user.is_admin %}
-      <a href="{{ url_for('admin.index') }}"
+      <a href="{{ url_for('admin.index') }}" onclick="closeSidebar()"
          class="flex items-center gap-3 px-5 py-2.5 text-sm text-purple-400 hover:text-white hover:bg-white/5 transition-all
-                {% if 'admin' in request.endpoint %}nav-active{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
+                {% if 'admin' in (request.endpoint or '') %}nav-active{% endif %}">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
           <path d="M8 1a3 3 0 100 6 3 3 0 000-6zM3 13s-.5-4 5-4 5 4 5 4"/>
           <path d="M12 7l1.5 1.5L16 6"/>
         </svg>
@@ -124,10 +165,10 @@
       </a>
       {% endif %}
 
-      <a href="{{ url_for('auth.perfil') }}"
+      <a href="{{ url_for('auth.perfil') }}" onclick="closeSidebar()"
          class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/55 hover:text-white hover:bg-white/5 transition-all mt-auto
                 {% if request.endpoint == 'auth.perfil' %}nav-active{% endif %}">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
           <circle cx="8" cy="6" r="3"/><path d="M2 14c0-3.3 2.7-5 6-5s6 1.7 6 5"/>
         </svg>
         Meu Perfil
@@ -135,7 +176,7 @@
 
       <a href="{{ url_for('auth.logout') }}"
          class="flex items-center gap-3 px-5 py-2.5 text-sm text-white/40 hover:text-white hover:bg-white/5 transition-all mb-4">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
           <path d="M10 3l4 5-4 5M14 8H6M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3"/>
         </svg>
         Sair
@@ -144,9 +185,9 @@
   </aside>
 
   <!-- Conteúdo principal -->
-  <main class="ml-52 flex-1 p-6">
+  <main id="main-content" class="md:ml-52 flex-1 p-4 md:p-6 pt-16 md:pt-6">
 
-    <!-- Alertas flash -->
+    <!-- Flash messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -161,6 +202,17 @@
 
     {% block content %}{% endblock %}
   </main>
+
+  <script>
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('sidebar-overlay').classList.add('open');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebar-overlay').classList.remove('open');
+    }
+  </script>
 
 </body>
 </html>

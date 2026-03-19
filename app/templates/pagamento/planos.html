@@ -1,108 +1,109 @@
 {% extends "base.html" %}
-{% block title %}— Planos{% endblock %}
+{% block title %}— Escolha seu Plano{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto">
+<div class="max-w-4xl mx-auto px-4 py-6">
 
   <!-- Header -->
-  <div class="text-center mb-10">
-    <h1 class="text-2xl font-medium text-gray-800 mb-2">Escolha seu plano</h1>
+  <div class="text-center mb-8">
+    <h1 class="text-2xl font-semibold text-gray-800 mb-2">Escolha seu plano</h1>
     {% if current_user.plano == 'trial' %}
-      <p class="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 inline-block">
-        Seu período de teste termina em <strong>{{ current_user.dias_restantes }} dias</strong>
+      <p class="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 inline-block">
+        ⏳ Seu período de teste termina em <strong>{{ current_user.dias_restantes }} dia(s)</strong>
       </p>
     {% elif not current_user.acesso_ativo %}
-      <p class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2 inline-block">
-        Seu acesso expirou. Assine para continuar usando o OSmais.
+      <p class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-2 inline-block">
+        ❌ Seu acesso expirou. Assine para continuar usando o OSmais.
       </p>
     {% endif %}
   </div>
 
-  <!-- Planos -->
-  <div class="grid grid-cols-2 gap-6">
+  <!-- Planos: 1 coluna no mobile, 3 no desktop -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
 
-    <!-- Mensal -->
-    <div class="bg-white rounded-xl border border-gray-200 p-7">
-      <p class="text-sm text-gray-500 mb-1">Plano</p>
-      <h2 class="text-xl font-medium text-gray-800 mb-4">Mensal</h2>
-      <div class="flex items-baseline gap-1 mb-6">
-        <span class="text-3xl font-medium text-gray-800">R$ {{ '%.0f' % preco_mensal }}</span>
+    <!-- MENSAL -->
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex flex-col">
+      <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Plano</p>
+      <h2 class="text-lg font-semibold text-gray-800 mb-3">Mensal</h2>
+      <div class="flex items-baseline gap-1 mb-1">
+        <span class="text-4xl font-bold text-gray-900">R$ {{ '%.0f' % preco_mensal }}</span>
         <span class="text-gray-400 text-sm">/mês</span>
       </div>
-      <ul class="space-y-2 text-sm text-gray-600 mb-8">
-        <li class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/></svg>
-          OS ilimitadas
-        </li>
-        <li class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/></svg>
-          Clientes ilimitados
-        </li>
-        <li class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/></svg>
-          PDF de orçamento
-        </li>
-        <li class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/></svg>
-          Suporte por email
-        </li>
+      <p class="text-xs text-gray-400 mb-5">Flexibilidade total</p>
+      <ul class="space-y-2 text-sm text-gray-600 mb-6 flex-1">
+        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>OS ilimitadas</li>
+        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Clientes ilimitados</li>
+        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>PDF de orçamento</li>
+        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Suporte por email</li>
       </ul>
-      <div class="space-y-2">
+      <div class="space-y-2 mt-auto">
         <a href="{{ url_for('pagamento.assinar', plano='mensal_recorrente') }}"
-           class="block text-center bg-gray-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
-          Assinar com débito automático
+           class="block text-center bg-gray-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-gray-700 transition-colors">
+          Débito automático
         </a>
         <a href="{{ url_for('pagamento.assinar', plano='mensal') }}"
-           class="block text-center border border-gray-300 text-gray-600 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition-colors">
-          Pagar avulso (sem recorrência)
+           class="block text-center border border-gray-300 text-gray-600 py-3 rounded-xl text-sm hover:bg-gray-50 transition-colors">
+          Pagar avulso
         </a>
       </div>
     </div>
 
-    <!-- Anual -->
-    <div class="bg-white rounded-xl border-2 border-blue-500 p-7 relative">
-      <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-xs px-3 py-1 rounded-full">
-        Melhor valor
+    <!-- SEMESTRAL -->
+    <div class="bg-white rounded-2xl border-2 border-blue-500 shadow-md p-6 flex flex-col relative">
+      <span class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-xs font-semibold px-4 py-1 rounded-full whitespace-nowrap">
+        ⚡ Mais popular
       </span>
-      <p class="text-sm text-gray-500 mb-1">Plano</p>
-      <h2 class="text-xl font-medium text-gray-800 mb-4">Anual</h2>
+      <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Plano</p>
+      <h2 class="text-lg font-semibold text-gray-800 mb-3">Semestral</h2>
       <div class="flex items-baseline gap-1 mb-1">
-        <span class="text-3xl font-medium text-gray-800">R$ {{ '%.0f' % preco_anual }}</span>
+        <span class="text-4xl font-bold text-blue-600">R$ {{ '%.0f' % preco_semestral }}</span>
+        <span class="text-gray-400 text-sm">/6 meses</span>
+      </div>
+      <p class="text-xs text-green-600 font-medium mb-5">
+        ~R$ {{ '%.0f' % (preco_semestral / 6) }}/mês · economia de {{ '%.0f' % ((1 - preco_semestral / (preco_mensal * 6)) * 100) }}%
+      </p>
+      <ul class="space-y-2 text-sm text-gray-600 mb-6 flex-1">
+        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Tudo do plano mensal</li>
+        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>1 mês grátis</li>
+        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Suporte prioritário</li>
+        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Ideal para a maioria</li>
+      </ul>
+      <a href="{{ url_for('pagamento.assinar', plano='semestral') }}"
+         class="block text-center bg-blue-500 text-white py-3 rounded-xl text-sm font-semibold hover:bg-blue-600 transition-colors mt-auto">
+        Assinar semestral
+      </a>
+    </div>
+
+    <!-- ANUAL -->
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex flex-col relative">
+      <span class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-xs font-semibold px-4 py-1 rounded-full whitespace-nowrap">
+        💰 Melhor valor
+      </span>
+      <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Plano</p>
+      <h2 class="text-lg font-semibold text-gray-800 mb-3">Anual</h2>
+      <div class="flex items-baseline gap-1 mb-1">
+        <span class="text-4xl font-bold text-gray-900">R$ {{ '%.0f' % preco_anual }}</span>
         <span class="text-gray-400 text-sm">/ano</span>
       </div>
-      <p class="text-xs text-green-600 mb-5">
+      <p class="text-xs text-green-600 font-medium mb-5">
         ~R$ {{ '%.0f' % (preco_anual / 12) }}/mês · economia de {{ '%.0f' % ((1 - preco_anual / (preco_mensal * 12)) * 100) }}%
       </p>
-      <ul class="space-y-2 text-sm text-gray-600 mb-8">
-        <li class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/></svg>
-          Tudo do plano mensal
-        </li>
-        <li class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/></svg>
-          2 meses grátis
-        </li>
-        <li class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/></svg>
-          Prioridade no suporte
-        </li>
-        <li class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/></svg>
-          Novas features em primeira mão
-        </li>
+      <ul class="space-y-2 text-sm text-gray-600 mb-6 flex-1">
+        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Tudo do plano mensal</li>
+        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>2 meses grátis</li>
+        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Prioridade máxima no suporte</li>
+        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Novas features em primeira mão</li>
       </ul>
       <a href="{{ url_for('pagamento.assinar', plano='anual') }}"
-         class="block text-center bg-blue-500 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors">
+         class="block text-center bg-emerald-500 text-white py-3 rounded-xl text-sm font-semibold hover:bg-emerald-600 transition-colors mt-auto">
         Assinar anual
       </a>
     </div>
 
   </div>
 
-  <!-- Rodapé -->
   <p class="text-center text-xs text-gray-400 mt-6">
-    Pagamento seguro via Mercado Pago · Cancele quando quiser
+    🔒 Pagamento seguro via <strong>Mercado Pago</strong> · Cancele quando quiser
   </p>
-
 </div>
 {% endblock %}

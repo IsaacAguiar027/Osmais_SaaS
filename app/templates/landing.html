@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SistemaOS — Sistema de OS para Assistências Técnicas | Grátis por 7 dias</title>
-<link rel="shortcut icon" href="../static/img/osmais.favicon.png" type="image/x-icon">
-<meta name="description" content="Gerencie ordens de serviço, clientes, estoque e orçamentos da sua assistência técnica em um só lugar. Simples, rápido e online. Teste grátis por 30 dias, sem cartão.">
+<link rel="shortcut icon" href="/static/img/osmais.favicon.png" type="image/x-icon">
+<meta name="description" content="Gerencie ordens de serviço, clientes, estoque e orçamentos da sua assistência técnica em um só lugar. Simples, rápido e online. Teste grátis por 7 dias, sem cartão.">
 <meta name="keywords" content="sistema para assistência técnica, ordem de serviço, OS online, gestão de assistência técnica, software para técnico de celular, sistema OS gratuito, controle de estoque técnico">
 <meta name="author" content="SistemaOS">
 <meta name="robots" content="index, follow">
@@ -13,7 +13,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.systemaos.com.br/">
 <meta property="og:title" content="SistemaOS — Sistema de OS para Assistências Técnicas">
-<meta property="og:description" content="Gerencie ordens de serviço, clientes, estoque e orçamentos da sua assistência técnica. Teste grátis por 30 dias, sem cartão.">
+<meta property="og:description" content="Gerencie ordens de serviço, clientes, estoque e orçamentos da sua assistência técnica. Teste grátis por 7 dias, sem cartão.">
 <meta property="og:locale" content="pt_BR">
 <meta property="og:site_name" content="SistemaOS">
 <meta name="twitter:card" content="summary">
@@ -35,6 +35,13 @@
       "price": "30.00",
       "priceCurrency": "BRL",
       "description": "OS ilimitadas, clientes ilimitados, PDF de orçamento"
+    },
+    {
+      "@type": "Offer",
+      "name": "Plano Semestral",
+      "price": "150.00",
+      "priceCurrency": "BRL",
+      "description": "Tudo do plano mensal + 1 mês grátis + suporte prioritário"
     },
     {
       "@type": "Offer",
@@ -348,7 +355,7 @@
     .pricing-header p { color: var(--muted); font-size: 17px; }
 
     .pricing-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr);
+      display: grid; grid-template-columns: repeat(3, 1fr);
       gap: 24px; max-width: 760px; margin: 0 auto;
     }
 
@@ -370,7 +377,7 @@
       .pricing-header { margin-bottom: 40px; }
       .pricing-header h2 { font-size: 28px; }
       .pricing-header p { font-size: 14px; }
-      .pricing-grid { grid-template-columns: 1fr; gap: 20px; max-width: 100%; }
+      .pricing-grid { grid-template-columns: 1fr; gap: 16px; max-width: 100%; }
       .pricing-card { padding: 24px; }
     }
 
@@ -499,7 +506,7 @@
       </a>
       <a href="#funcionalidades" class="btn-ghost">Ver funcionalidades</a>
     </div>
-    <p class="hero-trial"><strong>30 dias grátis</strong> · Sem precisar de cartão · Cancele quando quiser</p>
+    <p class="hero-trial"><strong>7 dias grátis</strong> · Sem precisar de cartão · Cancele quando quiser</p>
   </section>
 
   <!-- FEATURES -->
@@ -568,10 +575,10 @@
     <div class="pricing-header reveal">
       <span class="section-label">Preços</span>
       <h2>Simples e transparente</h2>
-      <p>Comece grátis por 30 dias. Depois escolha o plano ideal para o seu negócio.</p>
+      <p>Comece grátis por 7 dias. Depois escolha o plano ideal para o seu negócio.</p>
     </div>
 
-    <div class="pricing-grid">
+    <div class="pricing-grid" style="grid-template-columns: repeat(3,1fr); max-width: 1100px;">
 
       <div class="pricing-card reveal">
         <h3>Mensal</h3>
@@ -589,7 +596,25 @@
         <a href="/auth/registrar" class="btn-pricing btn-pricing-outline">Começar grátis</a>
       </div>
 
-      <div class="pricing-card destaque reveal">
+
+      <div class="pricing-card destaque reveal" style="border-color: rgba(59,130,246,0.6);">
+        <div class="pricing-badge" style="background: #3b82f6;">MAIS POPULAR</div>
+        <h3>Semestral</h3>
+        <div class="pricing-price">
+          <span class="valor">R$150</span>
+          <span class="periodo">/6 meses</span>
+        </div>
+        <p class="pricing-economia">~R$25/mês · economize 17%</p>
+        <ul class="pricing-features">
+          <li><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> Tudo do plano mensal</li>
+          <li><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> 1 mês grátis</li>
+          <li><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> Suporte prioritário</li>
+          <li><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> Ideal para a maioria</li>
+        </ul>
+        <a href="/auth/registrar" class="btn-pricing btn-pricing-solid">Começar grátis</a>
+      </div>
+
+      <div class="pricing-card reveal" style="border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.04);">
         <div class="pricing-badge">MELHOR VALOR</div>
         <h3>Anual</h3>
         <div class="pricing-price">

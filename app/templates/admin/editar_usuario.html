@@ -36,7 +36,8 @@
           class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
           <option value="trial" {% if usuario.plano == 'trial' %}selected{% endif %}>Trial</option>
           <option value="mensal" {% if usuario.plano == 'mensal' %}selected{% endif %}>Mensal</option>
-          <option value="anual" {% if usuario.plano == 'anual' %}selected{% endif %}>Anual</option>
+          <option value="semestral">Semestral</option>
+              <option value="anual" {% if usuario.plano == 'anual' %}selected{% endif %}>Anual</option>
           <option value="expirado" {% if usuario.plano == 'expirado' %}selected{% endif %}>Expirado</option>
         </select>
       </div>

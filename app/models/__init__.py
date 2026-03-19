@@ -32,7 +32,7 @@ class Usuario(UserMixin, db.Model):
         agora = datetime.utcnow()
         if self.plano == 'trial':
             return self.trial_expira_em and agora < self.trial_expira_em
-        if self.plano in ('mensal', 'anual'):
+        if self.plano in ('mensal', 'semestral', 'anual'):
             return self.assinatura_expira_em and agora < self.assinatura_expira_em
         return False
 
