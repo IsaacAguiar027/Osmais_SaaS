@@ -70,7 +70,7 @@ def mp_criar_preferencia(plano, usuario_id, email):
 def mp_criar_assinatura(plano, usuario_id, email):
     """Cria assinatura recorrente no Mercado Pago (débito automático)"""
     access_token = os.environ.get('MP_ACCESS_TOKEN')
-    preco_mensal = float(os.environ.get('MP_PRECO_MENSAL', 59.00))
+    preco_mensal = float(os.environ.get('MP_PRECO_MENSAL', 29.00))
     base_url = 'https://www.systemaos.com.br'
 
     dados = {
