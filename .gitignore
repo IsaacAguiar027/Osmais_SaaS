@@ -1,35 +1,53 @@
-node_modules
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
 
-# Ambiente virtual
+# Virtualenv
 venv/
 env/
 .venv/
+ENV/
 
-# Banco de dados (dados reais não vão pro git)
+# Banco de dados local
 *.db
 *.sqlite
 *.sqlite3
 
-# Credenciais e variáveis de ambiente
-.env
+# Node (não precisamos no Railway)
+node_modules/
+npm-debug.log
+package-lock.json
 
-# Cache do Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# Ambiente
+.env.local
+.env.production
 
-# Arquivos do sistema
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
 Thumbs.db
 
-# IDEs
-.vscode/
-.idea/
-*.code-workspace
-
-# Logs
+# Railway / deploy
 *.log
 ngrok.exe
-# Uploads futuros (quando tiver)
-app/static/uploads/
+ngrok
+
+# Ferramentas de admin local
+virar_admin.py
+make_admin.py
+migrate_admin.py
+atualizar_banco.py
+config_corrigido.py
