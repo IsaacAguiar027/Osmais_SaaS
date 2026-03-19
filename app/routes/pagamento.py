@@ -26,6 +26,9 @@ def mp_criar_preferencia(plano, usuario_id, email):
 
     base_url = 'https://www.systemaos.com.br'
 
+    print("PLANO:", plano)
+    print("PREÇO FINAL:", preco)
+
     dados = {
         'items': [{
             'title': titulo,
@@ -37,7 +40,7 @@ def mp_criar_preferencia(plano, usuario_id, email):
         'external_reference': f'{usuario_id}:{plano}',
         'back_urls': {
             'success': f'{base_url}/pagamento/aguardando',
-            'failure': f'{base_url}/pagamento/falha.html',
+            'failure': f'{base_url}/pagamento/falha',
             'pending': f'{base_url}/pagamento/aguardando'
         },
         'auto_return': 'approved',
