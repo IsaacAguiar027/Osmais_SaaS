@@ -33,6 +33,7 @@ with app.app_context():
             "ALTER TABLE ordens ADD COLUMN servico_realizado TEXT",
             "ALTER TABLE ordens ADD COLUMN valor_peca FLOAT DEFAULT 0.0",
             "ALTER TABLE ordens ADD COLUMN valor_mao_obra FLOAT DEFAULT 0.0",
+            "ALTER TABLE ordens ADD COLUMN garantia_dias INTEGER DEFAULT 0"
         ]:
             try:
                 conn.execute(sa.text(col))
