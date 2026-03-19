@@ -14,8 +14,8 @@ pagamento_bp = Blueprint('pagamento', __name__, url_prefix='/pagamento')
 def mp_criar_preferencia(plano, usuario_id, email):
     """Cria preferência de pagamento no Mercado Pago via urllib (sem biblioteca externa)"""
     access_token = os.environ.get('MP_ACCESS_TOKEN')
-    preco_mensal = float(os.environ.get('MP_PRECO_MENSAL', 59.00))
-    preco_anual = float(os.environ.get('MP_PRECO_ANUAL', 497.00))
+    preco_mensal = float(os.environ.get('MP_PRECO_MENSAL', 29.00))
+    preco_anual = float(os.environ.get('MP_PRECO_ANUAL', 300.00))
 
     if plano == 'mensal':
         titulo = 'OSmais — Plano Mensal'
@@ -24,7 +24,7 @@ def mp_criar_preferencia(plano, usuario_id, email):
         titulo = 'OSmais — Plano Anual'
         preco = preco_anual
 
-    base_url = request.host_url.rstrip('/')
+    base_url = 'https://www.systemaos.com.br'
 
     dados = {
         'items': [{
@@ -71,7 +71,7 @@ def mp_criar_assinatura(plano, usuario_id, email):
     """Cria assinatura recorrente no Mercado Pago (débito automático)"""
     access_token = os.environ.get('MP_ACCESS_TOKEN')
     preco_mensal = float(os.environ.get('MP_PRECO_MENSAL', 59.00))
-    base_url = os.environ.get('MP_BASE_URL', request.host_url.rstrip('/'))
+    base_url = 'https://www.systemaos.com.br'
 
     dados = {
         'reason': 'OSmais — Plano Mensal',
@@ -110,8 +110,8 @@ def mp_criar_assinatura(plano, usuario_id, email):
 @pagamento_bp.route('/planos')
 @login_required
 def planos():
-    preco_mensal = float(os.environ.get('MP_PRECO_MENSAL', 59.00))
-    preco_anual = float(os.environ.get('MP_PRECO_ANUAL', 497.00))
+    preco_mensal = float(os.environ.get('MP_PRECO_MENSAL', 29.00))
+    preco_anual = float(os.environ.get('MP_PRECO_ANUAL', 300.00))
     public_key = os.environ.get('MP_PUBLIC_KEY', '')
     return render_template('pagamento/planos.html',
                            preco_mensal=preco_mensal,
