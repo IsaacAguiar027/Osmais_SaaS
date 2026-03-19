@@ -283,15 +283,24 @@ def webhook():
     return jsonify({'status': 'ok'}), 200
 
 
+
 def _ativar_plano(usuario, plano, payment_id):
     """Ativa o plano do usuário após pagamento confirmado"""
     agora = datetime.utcnow()
     usuario.plano = plano
     usuario.mp_payment_id = payment_id
 
+    # 🔥 VERIFICA SE JÁ TEM PLANO ATIVO
+    if usuario.assinatura_expira_em and usuario.assinatura_expira_em > agora:
+        base = usuario.assinatura_expira_em
+    else:
+        base = agora
+
+    # 🔥 SOMA O TEMPO
     if plano == 'mensal':
-        usuario.assinatura_expira_em = agora + timedelta(days=30)
+        usuario.assinatura_expira_em = base + timedelta(days=30)
+
     elif plano == 'anual':
-        usuario.assinatura_expira_em = agora + timedelta(days=365)
+        usuario.assinatura_expira_em = base + timedelta(days=365)
 
     db.session.commit()
