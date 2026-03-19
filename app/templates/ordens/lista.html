@@ -2,56 +2,97 @@
 {% block title %}— Ordens de Serviço{% endblock %}
 
 {% block content %}
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+<div class="flex items-center justify-between mb-4">
   <h1 class="text-xl font-medium text-gray-800">Ordens de Serviço</h1>
   <a href="{{ url_for('ordens.nova') }}"
-     class="inline-flex items-center justify-center bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors transition-transform duration-500 ease-in-out hover:scale-110">
+     class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors">
     + Nova OS
   </a>
 </div>
 
+<!-- Buscador e filtros -->
+<form method="GET" action="{{ url_for('ordens.lista') }}" class="flex gap-3 mb-5">
+  <div class="flex-1 relative">
+    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 16">
+      <circle cx="6.5" cy="6.5" r="4"/><path d="M11 11l3 3"/>
+    </svg>
+    <input type="text" name="busca" value="{{ busca }}"
+      placeholder="Buscar por cliente, dispositivo ou problema..."
+      class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+  </div>
+  <select name="status"
+    class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+    <option value="">Todos os status</option>
+    <option value="aberta"       {% if status == 'aberta' %}selected{% endif %}>Aberta</option>
+    <option value="em_reparo"    {% if status == 'em_reparo' %}selected{% endif %}>Em reparo</option>
+    <option value="ag_peca"      {% if status == 'ag_peca' %}selected{% endif %}>Ag. peça</option>
+    <option value="ag_aprovacao" {% if status == 'ag_aprovacao' %}selected{% endif %}>Ag. aprovação</option>
+    <option value="concluida"    {% if status == 'concluida' %}selected{% endif %}>Concluída</option>
+    <option value="cancelada"    {% if status == 'cancelada' %}selected{% endif %}>Cancelada</option>
+  </select>
+  <button type="submit"
+    class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors">
+    Buscar
+  </button>
+  {% if busca or status %}
+  <a href="{{ url_for('ordens.lista') }}"
+     class="border border-gray-300 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">
+    Limpar
+  </a>
+  {% endif %}
+</form>
+
+{% if busca or status %}
+<p class="text-xs text-gray-400 mb-3">{{ ordens|length }} resultado(s) encontrado(s)</p>
+{% endif %}
+
 <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
   {% if ordens %}
-  <div class="overflow-x-auto">
-    <table class="w-full min-w-[520px]">
-      <thead class="bg-gray-50 text-xs text-gray-500">
-        <tr>
-          <th class="px-5 py-3 text-left">Nº OS</th>
-          <th class="px-5 py-3 text-left">Cliente</th>
-          <th class="px-5 py-3 text-left hidden md:table-cell">Dispositivo</th>
-          <th class="px-5 py-3 text-left">Status</th>
-          <th class="px-5 py-3 text-left hidden sm:table-cell">Valor</th>
-          <th class="px-5 py-3 text-left hidden lg:table-cell">Data</th>
-          <th class="px-5 py-3"></th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-100">
-        {% for ordem in ordens %}
-        <tr class="hover:bg-gray-50 transition-colors">
-          <td class="px-5 py-3 text-sm text-blue-500 font-medium">
-            <a href="{{ url_for('ordens.detalhe', id=ordem.id) }}">#{{ '%04d' % ordem.id }}</a>
-          </td>
-          <td class="px-5 py-3 text-sm text-gray-700">{{ ordem.cliente.nome }}</td>
-          <td class="px-5 py-3 text-sm text-gray-700 hidden md:table-cell">{{ ordem.dispositivo }}</td>
-          <td class="px-5 py-3">
-            {% if ordem.status == 'aberta' %}<span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">Aberta</span>
-            {% elif ordem.status == 'em_reparo' %}<span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">Em reparo</span>
-            {% elif ordem.status == 'ag_peca' %}<span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">Ag. peça</span>
-            {% elif ordem.status == 'ag_aprovacao' %}<span class="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">Ag. aprovação</span>
-            {% elif ordem.status == 'concluida' %}<span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">Concluída</span>
-            {% elif ordem.status == 'cancelada' %}<span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">Cancelada</span>
-            {% endif %}
-          </td>
-          <td class="px-5 py-3 text-sm text-gray-700 hidden sm:table-cell">R$ {{ '%.2f' % ordem.valor }}</td>
-          <td class="px-5 py-3 text-xs text-gray-400 hidden lg:table-cell">{{ ordem.criado_em.strftime('%d/%m/%Y') }}</td>
-          <td class="px-5 py-3">
-            <a href="{{ url_for('ordens.editar', id=ordem.id) }}" class="text-xs text-gray-400 hover:text-gray-700">Editar</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  <table class="w-full">
+    <thead class="bg-gray-50 text-xs text-gray-500">
+      <tr>
+        <th class="px-5 py-3 text-left">Nº OS</th>
+        <th class="px-5 py-3 text-left">Cliente</th>
+        <th class="px-5 py-3 text-left">Dispositivo</th>
+        <th class="px-5 py-3 text-left">Status</th>
+        <th class="px-5 py-3 text-left">Valor</th>
+        <th class="px-5 py-3 text-left">Data</th>
+        <th class="px-5 py-3"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for ordem in ordens %}
+      <tr class="hover:bg-gray-50 transition-colors">
+        <td class="px-5 py-3 text-sm text-blue-500 font-medium">
+          <a href="{{ url_for('ordens.detalhe', id=ordem.id) }}">#{{ '%04d' % ordem.id }}</a>
+        </td>
+        <td class="px-5 py-3 text-sm text-gray-700">{{ ordem.cliente.nome }}</td>
+        <td class="px-5 py-3 text-sm text-gray-700">{{ ordem.dispositivo }}</td>
+        <td class="px-5 py-3">
+          {% if ordem.status == 'aberta' %}
+            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">Aberta</span>
+          {% elif ordem.status == 'em_reparo' %}
+            <span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">Em reparo</span>
+          {% elif ordem.status == 'ag_peca' %}
+            <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">Ag. peça</span>
+          {% elif ordem.status == 'ag_aprovacao' %}
+            <span class="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">Ag. aprovação</span>
+          {% elif ordem.status == 'concluida' %}
+            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">Concluída</span>
+          {% elif ordem.status == 'cancelada' %}
+            <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">Cancelada</span>
+          {% endif %}
+        </td>
+        <td class="px-5 py-3 text-sm text-gray-700">R$ {{ '%.2f' % ordem.valor }}</td>
+        <td class="px-5 py-3 text-xs text-gray-400">{{ ordem.criado_em.strftime('%d/%m/%Y') }}</td>
+        <td class="px-5 py-3">
+          <a href="{{ url_for('ordens.editar', id=ordem.id) }}"
+             class="text-xs text-gray-400 hover:text-gray-700">Editar</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
   {% else %}
   <div class="px-5 py-10 text-center text-sm text-gray-400">
     Nenhuma OS encontrada.

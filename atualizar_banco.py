@@ -5,7 +5,7 @@ app = create_app()
 with app.app_context():
     with db.engine.connect() as conn:
         try:
-            conn.execute(sa.text('ALTER TABLE usuarios ADD COLUMN is_admin BOOLEAN DEFAULT 0'))
+            conn.execute(sa.text('ALTER TABLE ordens ADD COLUMN garantia_dias INTEGER DEFAULT 0'))
         except:
             pass
         conn.commit()

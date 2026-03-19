@@ -2,50 +2,109 @@
 {% block title %}— Clientes{% endblock %}
 
 {% block content %}
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+<div class="flex items-center justify-between mb-6">
   <h1 class="text-xl font-medium text-gray-800">Clientes</h1>
-  <a href="{{ url_for('clientes.novo') }}"
-     class="inline-flex items-center justify-center bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors transition-transform duration-500 ease-in-out hover:scale-110">
-    + Novo Cliente
-  </a>
 </div>
 
-<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-  {% if clientes %}
-  <div class="overflow-x-auto">
-    <table class="w-full min-w-[400px]">
+<div class="grid grid-cols-2 gap-6">
+
+  <!-- Formulário cadastrar / editar -->
+  <div class="bg-white rounded-xl border border-gray-200 p-5">
+    {% if editando %}
+      <h2 class="text-sm font-medium text-gray-700 mb-4">Editar cliente</h2>
+      <form method="POST" action="{{ url_for('clientes.editar', id=editando.id) }}">
+    {% else %}
+      <h2 class="text-sm font-medium text-gray-700 mb-4">Novo cliente</h2>
+      <form method="POST" action="{{ url_for('clientes.novo') }}">
+    {% endif %}
+
+      <div class="mb-3">
+        <label class="block text-xs text-gray-500 mb-1">Nome completo</label>
+        <input type="text" name="nome" required
+          value="{{ editando.nome if editando else '' }}"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <div class="mb-3">
+        <label class="block text-xs text-gray-500 mb-1">Telefone / WhatsApp</label>
+        <input type="text" name="telefone"
+          value="{{ editando.telefone if editando else '' }}"
+          placeholder="(00) 00000-0000"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-xs text-gray-500 mb-1">Email</label>
+        <input type="email" name="email"
+          value="{{ editando.email if editando else '' }}"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <div class="flex gap-2">
+        <button type="submit"
+          class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors">
+          {% if editando %}Salvar alterações{% else %}Cadastrar{% endif %}
+        </button>
+        {% if editando %}
+        <a href="{{ url_for('clientes.lista') }}"
+           class="border border-gray-300 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors">
+          Cancelar
+        </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Lista de clientes -->
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div class="px-5 py-4 border-b border-gray-100">
+      <h2 class="text-sm font-medium text-gray-700">Clientes cadastrados</h2>
+    </div>
+    {% if clientes %}
+    <table class="w-full">
       <thead class="bg-gray-50 text-xs text-gray-500">
         <tr>
-          <th class="px-5 py-3 text-left">Nome</th>
-          <th class="px-5 py-3 text-left hidden sm:table-cell">Telefone</th>
-          <th class="px-5 py-3 text-left hidden md:table-cell">Email</th>
-          <th class="px-5 py-3 text-left">OS</th>
-          <th class="px-5 py-3"></th>
+          <th class="px-4 py-3 text-left">Nome</th>
+          <th class="px-4 py-3 text-left">Telefone</th>
+          <th class="px-4 py-3 text-left">OS</th>
+          <th class="px-4 py-3"></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
         {% for cliente in clientes %}
-        <tr class="hover:bg-gray-50 transition-colors">
-          <td class="px-5 py-3 text-sm font-medium text-gray-800">{{ cliente.nome }}</td>
-          <td class="px-5 py-3 text-sm text-gray-600 hidden sm:table-cell">{{ cliente.telefone or '—' }}</td>
-          <td class="px-5 py-3 text-sm text-gray-600 hidden md:table-cell">{{ cliente.email or '—' }}</td>
-          <td class="px-5 py-3 text-sm text-gray-600">{{ cliente.ordens | length }}</td>
-          <td class="px-5 py-3">
-            <form method="POST" action="{{ url_for('clientes.deletar', id=cliente.id) }}"
-                  onsubmit="return confirm('Remover cliente {{ cliente.nome }}?')">
-              <button type="submit" class="text-xs text-red-400 hover:text-red-600">Remover</button>
-            </form>
+        <tr class="hover:bg-gray-50 {% if editando and editando.id == cliente.id %}bg-blue-50{% endif %}">
+          <td class="px-4 py-3">
+            <p class="text-sm font-medium text-gray-800">{{ cliente.nome }}</p>
+            {% if cliente.email %}
+            <p class="text-xs text-gray-400">{{ cliente.email }}</p>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 text-sm text-gray-600">
+            {{ cliente.telefone or '—' }}
+          </td>
+          <td class="px-4 py-3 text-sm text-gray-500">
+            {{ cliente.ordens | length }}
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-2 justify-end">
+              <a href="{{ url_for('clientes.editar', id=cliente.id) }}"
+                 class="text-xs text-blue-500 hover:text-blue-700">Editar</a>
+              <form method="POST" action="{{ url_for('clientes.deletar', id=cliente.id) }}"
+                    onsubmit="return confirm('Remover {{ cliente.nome }}?')">
+                <button type="submit" class="text-xs text-red-400 hover:text-red-600">Remover</button>
+              </form>
+            </div>
           </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
+    {% else %}
+    <div class="px-5 py-8 text-center text-sm text-gray-400">
+      Nenhum cliente cadastrado ainda.
+    </div>
+    {% endif %}
   </div>
-  {% else %}
-  <div class="px-5 py-10 text-center text-sm text-gray-400">
-    Nenhum cliente cadastrado.
-    <a href="{{ url_for('clientes.novo') }}" class="text-blue-500 hover:underline ml-1">Cadastrar agora</a>
-  </div>
-  {% endif %}
+
 </div>
 {% endblock %}

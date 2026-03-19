@@ -2,31 +2,77 @@
 {% block title %}— Dashboard{% endblock %}
 
 {% block content %}
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+<div class="flex items-center justify-between mb-6">
   <div>
     <h1 class="text-xl font-medium text-gray-800">Dashboard</h1>
-    <p class="text-sm text-gray-500 mt-0.5">Bem-vindo de volta, {{ current_user.nome }}!</p>
+    <p class="text-sm text-gray-500 mt-0.5">Bem-vindo de volta, {{ current_user.nome_loja }}!</p>
   </div>
   <a href="{{ url_for('ordens.nova') }}"
-     class="inline-flex items-center justify-center bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors transition-transform duration-500 ease-in-out hover:scale-110">
+     class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition-colors">
     + Nova OS
   </a>
 </div>
 
 <!-- Métricas -->
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+<div class="grid grid-cols-4 gap-4 mb-5">
   <div class="bg-white rounded-xl p-5 border border-gray-200">
     <p class="text-xs text-gray-500 mb-2">OS em aberto</p>
     <p class="text-3xl font-medium text-gray-800">{{ total_abertas }}</p>
   </div>
   <div class="bg-white rounded-xl p-5 border border-gray-200">
-    <p class="text-xs text-gray-500 mb-2">Clientes cadastrados</p>
+    <p class="text-xs text-gray-500 mb-2">Concluídas</p>
+    <p class="text-3xl font-medium text-green-600">{{ total_concluidas }}</p>
+  </div>
+  <div class="bg-white rounded-xl p-5 border border-gray-200">
+    <p class="text-xs text-gray-500 mb-2">Clientes</p>
     <p class="text-3xl font-medium text-gray-800">{{ total_clientes }}</p>
   </div>
   <div class="bg-white rounded-xl p-5 border border-gray-200">
-    <p class="text-xs text-gray-500 mb-2">Sistema</p>
-    <p class="text-sm font-medium text-green-600 mt-2">● Online</p>
+    <p class="text-xs text-gray-500 mb-2">Faturamento do mês</p>
+    <p class="text-2xl font-medium text-blue-600">R$ {{ '%.0f' % faturamento_mes }}</p>
+    <div class="mt-2 pt-2 border-t border-gray-100 space-y-1">
+      <div class="flex justify-between text-xs">
+        <span class="text-gray-400">Mão de obra</span>
+        <span class="text-green-600 font-medium">R$ {{ '%.0f' % mao_obra_mes }}</span>
+      </div>
+      <div class="flex justify-between text-xs">
+        <span class="text-gray-400">Custo de peças</span>
+        <span class="text-red-400 font-medium">R$ {{ '%.0f' % custo_pecas_mes }}</span>
+      </div>
+      <div class="flex justify-between text-xs pt-1 border-t border-gray-100">
+        <span class="text-gray-500 font-medium">Margem</span>
+        <span class="text-blue-600 font-medium">R$ {{ '%.0f' % margem_mes }}</span>
+      </div>
+    </div>
   </div>
+</div>
+
+<!-- Gráficos -->
+<div class="grid grid-cols-2 gap-4 mb-5">
+
+  <!-- OS por status (donut) -->
+  <div class="bg-white rounded-xl border border-gray-200 p-5">
+    <h2 class="text-sm font-medium text-gray-700 mb-4">OS por status</h2>
+    <div class="flex items-center gap-6">
+      <canvas id="graficoStatus" width="160" height="160" style="flex-shrink:0"></canvas>
+      <div class="flex flex-col gap-2 text-xs">
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-gray-400 flex-shrink-0"></span> Aberta ({{ status_counts.aberta }})</div>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500 flex-shrink-0"></span> Em reparo ({{ status_counts.em_reparo }})</div>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-yellow-400 flex-shrink-0"></span> Ag. peça ({{ status_counts.ag_peca }})</div>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-orange-400 flex-shrink-0"></span> Ag. aprovação ({{ status_counts.ag_aprovacao }})</div>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500 flex-shrink-0"></span> Concluída ({{ status_counts.concluida }})</div>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-400 flex-shrink-0"></span> Cancelada ({{ status_counts.cancelada }})</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Composição do faturamento -->
+  <div class="bg-white rounded-xl border border-gray-200 p-5">
+    <h2 class="text-sm font-medium text-gray-700 mb-1">Composição do faturamento</h2>
+    <p class="text-xs text-gray-400 mb-4">OS concluídas este mês</p>
+    <canvas id="graficoFaturamento" height="140"></canvas>
+  </div>
+
 </div>
 
 <!-- OS Recentes -->
@@ -37,40 +83,44 @@
   </div>
 
   {% if ordens_recentes %}
-  <div class="overflow-x-auto">
-    <table class="w-full min-w-[480px]">
-      <thead class="bg-gray-50 text-xs text-gray-500">
-        <tr>
-          <th class="px-5 py-3 text-left">Nº OS</th>
-          <th class="px-5 py-3 text-left">Cliente</th>
-          <th class="px-5 py-3 text-left hidden sm:table-cell">Dispositivo</th>
-          <th class="px-5 py-3 text-left">Status</th>
-          <th class="px-5 py-3 text-left hidden sm:table-cell">Valor</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-100">
-        {% for ordem in ordens_recentes %}
-        <tr class="hover:bg-gray-50 transition-colors">
-          <td class="px-5 py-3 text-sm text-blue-500 font-medium">
-            <a href="{{ url_for('ordens.detalhe', id=ordem.id) }}">#{{ '%04d' % ordem.id }}</a>
-          </td>
-          <td class="px-5 py-3 text-sm text-gray-700">{{ ordem.cliente.nome }}</td>
-          <td class="px-5 py-3 text-sm text-gray-700 hidden sm:table-cell">{{ ordem.dispositivo }}</td>
-          <td class="px-5 py-3">
-            {% if ordem.status == 'aberta' %}<span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">Aberta</span>
-            {% elif ordem.status == 'em_reparo' %}<span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">Em reparo</span>
-            {% elif ordem.status == 'ag_peca' %}<span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">Ag. peça</span>
-            {% elif ordem.status == 'ag_aprovacao' %}<span class="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">Ag. aprovação</span>
-            {% elif ordem.status == 'concluida' %}<span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">Concluída</span>
-            {% elif ordem.status == 'cancelada' %}<span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">Cancelada</span>
-            {% endif %}
-          </td>
-          <td class="px-5 py-3 text-sm text-gray-700 hidden sm:table-cell">R$ {{ '%.2f' % ordem.valor }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  <table class="w-full">
+    <thead class="bg-gray-50 text-xs text-gray-500">
+      <tr>
+        <th class="px-5 py-3 text-left">Nº OS</th>
+        <th class="px-5 py-3 text-left">Cliente</th>
+        <th class="px-5 py-3 text-left">Dispositivo</th>
+        <th class="px-5 py-3 text-left">Status</th>
+        <th class="px-5 py-3 text-left">Valor</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for ordem in ordens_recentes %}
+      <tr class="hover:bg-gray-50 transition-colors">
+        <td class="px-5 py-3 text-sm text-blue-500 font-medium">
+          <a href="{{ url_for('ordens.detalhe', id=ordem.id) }}">#{{ '%04d' % ordem.id }}</a>
+        </td>
+        <td class="px-5 py-3 text-sm text-gray-700">{{ ordem.cliente.nome }}</td>
+        <td class="px-5 py-3 text-sm text-gray-700">{{ ordem.dispositivo }}</td>
+        <td class="px-5 py-3">
+          {% if ordem.status == 'aberta' %}
+            <span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">Aberta</span>
+          {% elif ordem.status == 'em_reparo' %}
+            <span class="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">Em reparo</span>
+          {% elif ordem.status == 'ag_peca' %}
+            <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-700">Ag. peça</span>
+          {% elif ordem.status == 'ag_aprovacao' %}
+            <span class="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">Ag. aprovação</span>
+          {% elif ordem.status == 'concluida' %}
+            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">Concluída</span>
+          {% elif ordem.status == 'cancelada' %}
+            <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">Cancelada</span>
+          {% endif %}
+        </td>
+        <td class="px-5 py-3 text-sm text-gray-700">R$ {{ '%.2f' % ordem.valor }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
   {% else %}
   <div class="px-5 py-10 text-center text-sm text-gray-400">
     Nenhuma OS criada ainda.
@@ -78,4 +128,69 @@
   </div>
   {% endif %}
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  // Gráfico donut — status
+  const ctxStatus = document.getElementById('graficoStatus').getContext('2d');
+  new Chart(ctxStatus, {
+    type: 'doughnut',
+    data: {
+      labels: ['Aberta', 'Em reparo', 'Ag. peça', 'Ag. aprovação', 'Concluída', 'Cancelada'],
+      datasets: [{
+        data: [
+          {{ status_counts.aberta }},
+          {{ status_counts.em_reparo }},
+          {{ status_counts.ag_peca }},
+          {{ status_counts.ag_aprovacao }},
+          {{ status_counts.concluida }},
+          {{ status_counts.cancelada }}
+        ],
+        backgroundColor: ['#9ca3af','#3b82f6','#facc15','#fb923c','#22c55e','#f87171'],
+        borderWidth: 0,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      cutout: '70%',
+      plugins: { legend: { display: false } },
+      animation: { duration: 600 }
+    }
+  });
+
+  // Gráfico barras — composição faturamento
+  const ctxFat = document.getElementById('graficoFaturamento').getContext('2d');
+  new Chart(ctxFat, {
+    type: 'bar',
+    data: {
+      labels: ['Faturamento total', 'Mão de obra', 'Custo de peças', 'Margem'],
+      datasets: [{
+        data: [
+          {{ '%.2f' % faturamento_mes }},
+          {{ '%.2f' % mao_obra_mes }},
+          {{ '%.2f' % custo_pecas_mes }},
+          {{ '%.2f' % margem_mes }}
+        ],
+        backgroundColor: ['#3b82f6', '#22c55e', '#f87171', '#60a5fa'],
+        borderRadius: 6,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            font: { size: 11 },
+            callback: v => 'R$ ' + v.toLocaleString('pt-BR')
+          },
+          grid: { color: 'rgba(0,0,0,0.05)' }
+        },
+        x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+      },
+      plugins: { legend: { display: false } },
+      animation: { duration: 600 }
+    }
+  });
+</script>
 {% endblock %}

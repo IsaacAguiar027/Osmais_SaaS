@@ -81,6 +81,7 @@ class Ordem(db.Model):
     problema = db.Column(db.Text, nullable=False)
     diagnostico = db.Column(db.Text)
     servico_realizado = db.Column(db.Text)
+    garantia_dias = db.Column(db.Integer, default=0)    # prazo de garantia em dias
     valor_peca = db.Column(db.Float, default=0.0)       # interno - nao aparece no PDF
     valor_mao_obra = db.Column(db.Float, default=0.0)   # interno - nao aparece no PDF
     valor = db.Column(db.Float, default=0.0)            # total cobrado do cliente

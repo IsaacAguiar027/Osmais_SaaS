@@ -112,6 +112,22 @@
   </div>
   {% endif %}
 
+  <!-- Garantia -->
+  {% if ordem.garantia_dias and ordem.garantia_dias > 0 %}
+  <div class="section">
+    <div class="section-title">Garantia</div>
+    <p style="font-size: 13px; color: #374151;">
+      Este serviço possui garantia de
+      <strong>
+        {% if ordem.garantia_dias == 365 %}1 ano
+        {% elif ordem.garantia_dias == 180 %}6 meses
+        {% else %}{{ ordem.garantia_dias }} dias{% endif %}
+      </strong>
+      a partir da data de entrega, cobrindo o serviço realizado.
+    </p>
+  </div>
+  {% endif %}
+
   <!-- Valor total — SEM detalhes de peça/mão de obra -->
   <div class="valor-box">
     <span class="valor-label">Valor total do serviço</span>
@@ -126,7 +142,7 @@
   <!-- Botão imprimir (não aparece no PDF) -->
   <div class="no-print" style="text-align:center; margin-top:32px;">
     <button onclick="window.print()"
-      style="background:#1a2236; color:white; border:none; padding:10px 24px; border-radius:8px; font-size:13px; cursor:pointer; ">
+      style="background:#1a2236; color:white; border:none; padding:10px 24px; border-radius:8px; font-size:13px; cursor:pointer;">
       Imprimir / Salvar PDF
     </button>
     <a href="{{ url_for('ordens.detalhe', id=ordem.id) }}"

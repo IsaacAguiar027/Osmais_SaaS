@@ -7,7 +7,7 @@
   <h1 class="text-xl font-medium text-gray-800">Editar OS #{{ '%04d' % ordem.id }}</h1>
 </div>
 
-<div class="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 w-full max-w-2xl">
+<div class="bg-white rounded-xl border border-gray-200 p-6 max-w-2xl">
   <form method="POST">
 
     <div class="mb-4">
@@ -38,6 +38,21 @@
       <label class="block text-sm font-medium text-gray-700 mb-1">Diagnóstico técnico</label>
       <textarea name="diagnostico" rows="3" placeholder="Laudo técnico do reparo..."
         class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none">{{ ordem.diagnostico or '' }}</textarea>
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Garantia</label>
+      <select name="garantia_dias"
+        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="0"   {% if ordem.garantia_dias == 0 %}selected{% endif %}>Sem garantia</option>
+        <option value="7"   {% if ordem.garantia_dias == 7 %}selected{% endif %}>7 dias</option>
+        <option value="15"  {% if ordem.garantia_dias == 15 %}selected{% endif %}>15 dias</option>
+        <option value="30"  {% if ordem.garantia_dias == 30 %}selected{% endif %}>30 dias</option>
+        <option value="60"  {% if ordem.garantia_dias == 60 %}selected{% endif %}>60 dias</option>
+        <option value="90"  {% if ordem.garantia_dias == 90 %}selected{% endif %}>90 dias</option>
+        <option value="180" {% if ordem.garantia_dias == 180 %}selected{% endif %}>6 meses</option>
+        <option value="365" {% if ordem.garantia_dias == 365 %}selected{% endif %}>1 ano</option>
+      </select>
     </div>
 
     <div class="mb-4">

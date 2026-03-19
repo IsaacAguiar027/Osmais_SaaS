@@ -20,14 +20,29 @@ def novo():
         nome = request.form.get('nome')
         telefone = request.form.get('telefone')
         email = request.form.get('email')
-
         cliente = Cliente(nome=nome, telefone=telefone, email=email)
         db.session.add(cliente)
         db.session.commit()
         flash('Cliente cadastrado!', 'sucesso')
         return redirect(url_for('clientes.lista'))
-
     return render_template('clientes/novo.html')
+
+
+@clientes_bp.route('/<int:id>/editar', methods=['GET', 'POST'])
+@login_required
+def editar(id):
+    cliente = Cliente.query.get_or_404(id)
+    clientes = Cliente.query.order_by(Cliente.nome).all()
+
+    if request.method == 'POST':
+        cliente.nome = request.form.get('nome')
+        cliente.telefone = request.form.get('telefone')
+        cliente.email = request.form.get('email')
+        db.session.commit()
+        flash('Cliente atualizado!', 'sucesso')
+        return redirect(url_for('clientes.lista'))
+
+    return render_template('clientes/lista.html', clientes=clientes, editando=cliente)
 
 
 @clientes_bp.route('/<int:id>/deletar', methods=['POST'])
