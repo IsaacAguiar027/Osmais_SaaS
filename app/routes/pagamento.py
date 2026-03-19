@@ -17,6 +17,11 @@ def mp_criar_preferencia(plano, usuario_id, email):
     preco_mensal = float(os.environ.get('MP_PRECO_MENSAL', 29.00))
     preco_anual = float(os.environ.get('MP_PRECO_ANUAL', 300.00))
 
+    # Validar plano
+    if plano not in ['mensal', 'anual']:
+        print(f'[MP] ERRO: Plano inválido: {plano}')
+        return None
+
     if plano == 'mensal':
         titulo = 'OSmais — Plano Mensal'
         preco = preco_mensal
@@ -24,10 +29,12 @@ def mp_criar_preferencia(plano, usuario_id, email):
         titulo = 'OSmais — Plano Anual'
         preco = preco_anual
 
+    # Garantir que é float com 2 casas decimais
+    preco = round(float(preco), 2)
+    
     base_url = 'https://www.systemaos.com.br'
 
-    print("PLANO:", plano)
-    print("PREÇO FINAL:", preco)
+    print(f"[MP] Criando preferência | Plano: {plano} | Preço: R$ {preco:.2f} | User: {usuario_id} | Email: {email}")
 
     dados = {
         'items': [{
@@ -47,6 +54,8 @@ def mp_criar_preferencia(plano, usuario_id, email):
         'notification_url': f'{base_url}/pagamento/webhook'
     }
 
+    print(f"[MP] Dados a enviar: {json.dumps(dados, ensure_ascii=False)}")
+
     url = 'https://api.mercadopago.com/checkout/preferences'
     req = urllib.request.Request(
         url,
@@ -61,10 +70,26 @@ def mp_criar_preferencia(plano, usuario_id, email):
     try:
         with urllib.request.urlopen(req) as resp:
             resultado = json.loads(resp.read().decode())
+            print(f"[MP] ✅ Preferência criada com sucesso: {resultado.get('id')}")
+            print(f"[MP] Init Point: {resultado.get('init_point')}")
             return resultado
     except urllib.error.HTTPError as e:
         erro = e.read().decode()
-        print(f'[MP] Erro ao criar preferência: {erro}')
+        print(f'[MP] ❌ Erro HTTP {e.code} ao criar preferência:')
+        print(f'[MP] Resposta: {erro}')
+        try:
+            erro_json = json.loads(erro)
+            if 'message' in erro_json:
+                print(f'[MP] Mensagem: {erro_json["message"]}')
+            if 'errors' in erro_json:
+                print(f'[MP] Detalhes dos erros:')
+                for err in erro_json.get('errors', []):
+                    print(f'     - {err}')
+        except:
+            pass
+        return None
+    except Exception as e:
+        print(f'[MP] ❌ Erro geral ao criar preferência: {str(e)}')
         return None
 
 
