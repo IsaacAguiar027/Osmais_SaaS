@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OSmais {% block title %}{% endblock %}</title>
-  <link rel="shortcut icon" href="../static/img/osmais.favicon.png"  type="image/x-icon">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
   <style>
@@ -66,20 +65,51 @@
         Estoque
       </a>
 
-      <!-- Aviso trial/expirado -->
-      {% if current_user.plano == 'trial' %}
-      <a href="{{ url_for('pagamento.planos') }}"
-         class="mx-3 mb-2 flex items-center gap-2 px-3 py-2 bg-amber-500/20 border border-amber-500/30 rounded-lg text-xs text-amber-300 hover:bg-amber-500/30 transition-all">
-        <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3a.75.75 0 110 1.5A.75.75 0 018 4zm.75 7.75h-1.5v-5h1.5v5z"/></svg>
-        Teste grátis · {{ current_user.dias_restantes }}d restantes
-      </a>
-      {% elif not current_user.acesso_ativo %}
-      <a href="{{ url_for('pagamento.planos') }}"
-         class="mx-3 mb-2 flex items-center gap-2 px-3 py-2 bg-red-500/20 border border-red-500/30 rounded-lg text-xs text-red-300 hover:bg-red-500/30 transition-all">
-        <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3a.75.75 0 110 1.5A.75.75 0 018 4zm.75 7.75h-1.5v-5h1.5v5z"/></svg>
-        Acesso expirado — assinar
-      </a>
-      {% endif %}
+      <!-- Info do plano na sidebar -->
+      <div class="mx-3 mb-2 px-3 py-2 rounded-lg border text-xs
+        {% if current_user.plano == 'trial' %}bg-amber-500/10 border-amber-500/20
+        {% elif current_user.plano in ('mensal', 'anual') and current_user.acesso_ativo %}bg-green-500/10 border-green-500/20
+        {% else %}bg-red-500/10 border-red-500/20{% endif %}">
+
+        <div class="flex items-center justify-between mb-1">
+          <span class="font-medium
+            {% if current_user.plano == 'trial' %}text-amber-300
+            {% elif current_user.plano in ('mensal', 'anual') and current_user.acesso_ativo %}text-green-300
+            {% else %}text-red-300{% endif %}">
+            {% if current_user.plano == 'trial' %}Teste grátis
+            {% elif current_user.plano == 'mensal' %}Plano Mensal
+            {% elif current_user.plano == 'anual' %}Plano Anual
+            {% else %}Expirado{% endif %}
+          </span>
+          {% if current_user.acesso_ativo %}
+            <span class="text-white/40">{{ current_user.dias_restantes }}d</span>
+          {% endif %}
+        </div>
+
+        {% if current_user.acesso_ativo %}
+          <div class="w-full bg-white/10 rounded-full h-1 mb-1.5">
+            {% if current_user.plano == 'trial' %}
+              {% set pct = (current_user.dias_restantes / 30 * 100) | int %}
+            {% elif current_user.plano == 'mensal' %}
+              {% set pct = (current_user.dias_restantes / 30 * 100) | int %}
+            {% else %}
+              {% set pct = (current_user.dias_restantes / 365 * 100) | int %}
+            {% endif %}
+            <div class="h-1 rounded-full
+              {% if current_user.plano == 'trial' %}bg-amber-400
+              {% else %}bg-green-400{% endif %}"
+              style="width: {{ pct if pct <= 100 else 100 }}%"></div>
+          </div>
+          <a href="{{ url_for('pagamento.planos') }}" class="text-white/30 hover:text-white/60 transition-colors">
+            {% if current_user.plano == 'trial' %}Assinar agora{% else %}Renovar plano{% endif %}
+          </a>
+        {% else %}
+          <a href="{{ url_for('pagamento.planos') }}"
+             class="text-red-300 hover:text-red-100 transition-colors font-medium">
+            Renovar acesso →
+          </a>
+        {% endif %}
+      </div>
 
       {% if current_user.is_admin %}
       <a href="{{ url_for('admin.index') }}"

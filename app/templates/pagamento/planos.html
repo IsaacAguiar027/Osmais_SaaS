@@ -19,7 +19,7 @@
   </div>
 
   <!-- Planos -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+  <div class="grid grid-cols-2 gap-6">
 
     <!-- Mensal -->
     <div class="bg-white rounded-xl border border-gray-200 p-7">
@@ -47,10 +47,16 @@
           Suporte por email
         </li>
       </ul>
-      <a href="{{ url_for('pagamento.assinar', plano='mensal') }}"
-         class="block text-center bg-gray-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
-        Assinar mensal
-      </a>
+      <div class="space-y-2">
+        <a href="{{ url_for('pagamento.assinar', plano='mensal_recorrente') }}"
+           class="block text-center bg-gray-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+          Assinar com débito automático
+        </a>
+        <a href="{{ url_for('pagamento.assinar', plano='mensal') }}"
+           class="block text-center border border-gray-300 text-gray-600 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition-colors">
+          Pagar avulso (sem recorrência)
+        </a>
+      </div>
     </div>
 
     <!-- Anual -->

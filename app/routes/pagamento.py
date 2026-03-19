@@ -24,7 +24,7 @@ def mp_criar_preferencia(plano, usuario_id, email):
         titulo = 'OSmais — Plano Anual'
         preco = preco_anual
 
-    base_url = os.environ.get('MP_BASE_URL', request.host_url.rstrip('/'))
+    base_url = request.host_url.rstrip('/')
 
     dados = {
         'items': [{
@@ -65,6 +65,48 @@ def mp_criar_preferencia(plano, usuario_id, email):
         return None
 
 
+
+
+def mp_criar_assinatura(plano, usuario_id, email):
+    """Cria assinatura recorrente no Mercado Pago (débito automático)"""
+    access_token = os.environ.get('MP_ACCESS_TOKEN')
+    preco_mensal = float(os.environ.get('MP_PRECO_MENSAL', 59.00))
+    base_url = os.environ.get('MP_BASE_URL', request.host_url.rstrip('/'))
+
+    dados = {
+        'reason': 'OSmais — Plano Mensal',
+        'auto_recurring': {
+            'frequency': 1,
+            'frequency_type': 'months',
+            'transaction_amount': preco_mensal,
+            'currency_id': 'BRL'
+        },
+        'payer_email': email,
+        'external_reference': f'{usuario_id}:{plano}',
+        'back_url': f'{base_url}/pagamento/sucesso',
+        'notification_url': f'{base_url}/pagamento/webhook'
+    }
+
+    url = 'https://api.mercadopago.com/preapproval'
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(dados).encode('utf-8'),
+        headers={
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json'
+        },
+        method='POST'
+    )
+
+    try:
+        with urllib.request.urlopen(req) as resp:
+            resultado = json.loads(resp.read().decode())
+            return resultado
+    except urllib.error.HTTPError as e:
+        erro = e.read().decode()
+        print(f'[MP] Erro ao criar assinatura: {erro}')
+        return None
+
 @pagamento_bp.route('/planos')
 @login_required
 def planos():
@@ -80,17 +122,25 @@ def planos():
 @pagamento_bp.route('/assinar/<plano>')
 @login_required
 def assinar(plano):
-    if plano not in ('mensal', 'anual'):
+    if plano not in ('mensal', 'anual', 'mensal_recorrente'):
         flash('Plano inválido.', 'erro')
         return redirect(url_for('pagamento.planos'))
 
+    # Plano mensal recorrente usa API de assinaturas
+    if plano == 'mensal_recorrente':
+        resultado = mp_criar_assinatura('mensal', current_user.id, current_user.email)
+        if not resultado:
+            flash('Erro ao criar assinatura. Tente novamente.', 'erro')
+            return redirect(url_for('pagamento.planos'))
+        return redirect(resultado['init_point'])
+
+    # Plano avulso (mensal ou anual)
     resultado = mp_criar_preferencia(plano, current_user.id, current_user.email)
 
     if not resultado:
         flash('Erro ao conectar com Mercado Pago. Tente novamente.', 'erro')
         return redirect(url_for('pagamento.planos'))
 
-    # Redireciona para o checkout do MP
     return redirect(resultado['init_point'])
 
 
@@ -131,11 +181,13 @@ def webhook():
     """Recebe notificações do Mercado Pago"""
     dados = request.get_json(silent=True) or {}
     tipo = dados.get('type') or request.args.get('type')
-    payment_id = dados.get('data', {}).get('id') or request.args.get('data.id')
+    resource_id = dados.get('data', {}).get('id') or request.args.get('data.id')
 
-    if tipo == 'payment' and payment_id:
-        access_token = os.environ.get('MP_ACCESS_TOKEN')
-        url = f'https://api.mercadopago.com/v1/payments/{payment_id}'
+    access_token = os.environ.get('MP_ACCESS_TOKEN')
+
+    # Pagamento avulso
+    if tipo == 'payment' and resource_id:
+        url = f'https://api.mercadopago.com/v1/payments/{resource_id}'
         req = urllib.request.Request(
             url,
             headers={'Authorization': f'Bearer {access_token}'},
@@ -144,17 +196,77 @@ def webhook():
         try:
             with urllib.request.urlopen(req) as resp:
                 pagamento = json.loads(resp.read().decode())
-
             if pagamento.get('status') == 'approved':
                 ref = pagamento.get('external_reference', '')
                 if ':' in ref:
                     usuario_id, plano = ref.split(':')
                     usuario = Usuario.query.get(int(usuario_id))
                     if usuario:
-                        _ativar_plano(usuario, plano, str(payment_id))
+                        _ativar_plano(usuario, plano, str(resource_id))
                         print(f'[MP] Plano {plano} ativado para usuário {usuario_id}')
         except Exception as e:
-            print(f'[MP] Erro no webhook: {e}')
+            print(f'[MP] Erro no webhook pagamento: {e}')
+
+    # Assinatura recorrente
+    elif tipo == 'subscription_preapproval' and resource_id:
+        url = f'https://api.mercadopago.com/preapproval/{resource_id}'
+        req = urllib.request.Request(
+            url,
+            headers={'Authorization': f'Bearer {access_token}'},
+            method='GET'
+        )
+        try:
+            with urllib.request.urlopen(req) as resp:
+                assinatura = json.loads(resp.read().decode())
+            status = assinatura.get('status')
+            ref = assinatura.get('external_reference', '')
+            print(f'[MP] Assinatura {resource_id} status={status} ref={ref}')
+            if status == 'authorized' and ':' in ref:
+                usuario_id, plano = ref.split(':')
+                usuario = Usuario.query.get(int(usuario_id))
+                if usuario:
+                    _ativar_plano(usuario, 'mensal', str(resource_id))
+                    print(f'[MP] Assinatura ativada para usuário {usuario_id}')
+            elif status in ('cancelled', 'paused') and ':' in ref:
+                usuario_id, _ = ref.split(':')
+                usuario = Usuario.query.get(int(usuario_id))
+                if usuario and usuario.plano == 'mensal':
+                    # Não cancela imediatamente — deixa expirar naturalmente
+                    print(f'[MP] Assinatura {status} para usuário {usuario_id}')
+        except Exception as e:
+            print(f'[MP] Erro no webhook assinatura: {e}')
+
+    # Cobrança recorrente (renovação automática)
+    elif tipo == 'subscription_authorized_payment' and resource_id:
+        url = f'https://api.mercadopago.com/authorized_payments/{resource_id}'
+        req = urllib.request.Request(
+            url,
+            headers={'Authorization': f'Bearer {access_token}'},
+            method='GET'
+        )
+        try:
+            with urllib.request.urlopen(req) as resp:
+                cobranca = json.loads(resp.read().decode())
+            if cobranca.get('status') == 'processed':
+                preapproval_id = cobranca.get('preapproval_id')
+                # Busca a assinatura para pegar o external_reference
+                url2 = f'https://api.mercadopago.com/preapproval/{preapproval_id}'
+                req2 = urllib.request.Request(
+                    url2,
+                    headers={'Authorization': f'Bearer {access_token}'},
+                    method='GET'
+                )
+                with urllib.request.urlopen(req2) as resp2:
+                    assinatura = json.loads(resp2.read().decode())
+                ref = assinatura.get('external_reference', '')
+                if ':' in ref:
+                    usuario_id, _ = ref.split(':')
+                    usuario = Usuario.query.get(int(usuario_id))
+                    if usuario:
+                        _ativar_plano(usuario, 'mensal', str(resource_id))
+                        print(f'[MP] Renovação automática ativada para usuário {usuario_id}')
+        except Exception as e:
+            print(f'[MP] Erro no webhook renovação: {e}')
 
     return jsonify({'status': 'ok'}), 200
 

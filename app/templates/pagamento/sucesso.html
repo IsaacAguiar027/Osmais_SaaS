@@ -1,15 +1,79 @@
 {% extends "base.html" %}
 {% block title %}— Pagamento aprovado{% endblock %}
 {% block content %}
-<div class="max-w-md mx-auto text-center py-16">
-  <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-    <svg class="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/></svg>
+<div class="max-w-lg mx-auto py-12">
+
+  <!-- Ícone de sucesso -->
+  <div class="text-center mb-8">
+    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <svg class="w-10 h-10 text-green-500" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/>
+      </svg>
+    </div>
+    <h1 class="text-2xl font-medium text-gray-800 mb-2">Pagamento aprovado!</h1>
+    <p class="text-sm text-gray-500">Seu plano foi ativado com sucesso.</p>
   </div>
-  <h1 class="text-xl font-medium text-gray-800 mb-2">Pagamento aprovado!</h1>
-  <p class="text-sm text-gray-500 mb-6">Seu plano foi ativado com sucesso. Bom uso do OSmais!</p>
+
+  <!-- Card com detalhes do plano -->
+  <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+    <h2 class="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
+      <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3a.75.75 0 110 1.5A.75.75 0 018 4zm.75 7.75h-1.5v-5h1.5v5z"/>
+      </svg>
+      Detalhes do seu plano
+    </h2>
+    <div class="space-y-3 text-sm">
+      <div class="flex justify-between">
+        <span class="text-gray-500">Plano</span>
+        <span class="text-gray-800 font-medium capitalize">
+          {% if current_user.plano == 'mensal' %}Mensal
+          {% elif current_user.plano == 'anual' %}Anual
+          {% else %}{{ current_user.plano }}{% endif %}
+        </span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Status</span>
+        <span class="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700 font-medium">Ativo</span>
+      </div>
+      {% if current_user.assinatura_expira_em %}
+      <div class="flex justify-between">
+        <span class="text-gray-500">Válido até</span>
+        <span class="text-gray-800">{{ current_user.assinatura_expira_em.strftime('%d/%m/%Y') }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-500">Dias restantes</span>
+        <span class="text-blue-600 font-medium">{{ current_user.dias_restantes }} dias</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- O que você tem acesso -->
+  <div class="bg-gray-50 rounded-xl border border-gray-200 p-5 mb-6">
+    <h2 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Incluído no seu plano</h2>
+    <ul class="space-y-2 text-sm text-gray-600">
+      <li class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/></svg>
+        OS ilimitadas
+      </li>
+      <li class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/></svg>
+        Clientes ilimitados
+      </li>
+      <li class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/></svg>
+        PDF de orçamento
+      </li>
+      <li class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 2.5l-8 8-3-3L1 9l3.5 3.5 9.5-9.5z"/></svg>
+        Suporte por email
+      </li>
+    </ul>
+  </div>
+
   <a href="{{ url_for('dashboard.index') }}"
-     class="bg-gray-900 text-white px-6 py-2.5 rounded-lg text-sm hover:bg-gray-800 transition-colors">
-    Ir para o dashboard
+     class="block text-center bg-gray-900 text-white py-3 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+    Ir para o dashboard →
   </a>
 </div>
 {% endblock %}
