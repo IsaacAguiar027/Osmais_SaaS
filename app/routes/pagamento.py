@@ -152,7 +152,7 @@ def status_pagamento():
         if usuario.assinatura_expira_em > datetime.utcnow():
             return jsonify({'status': 'aprovado'})
 
-    return jsonify({'status': 'pendente'})
+    return jsonify({'status': 'pendente.html'})
 
 
 @pagamento_bp.route('/sucesso')
@@ -176,18 +176,15 @@ def sucesso():
 
 
 @pagamento_bp.route('/falha')
-@login_required
 def falha():
     return render_template('pagamento/falha.html')
 
 
 @pagamento_bp.route('/pendente')
-@login_required
 def pendente():
     return render_template('pagamento/pendente.html')
 
 @pagamento_bp.route('/aguardando')
-@login_required
 def aguardando():
     return render_template('pagamento/aguardando.html')
 
