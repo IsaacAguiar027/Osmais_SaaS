@@ -1,396 +1,135 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirmação de Pagamento - SistemaOS</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
-            background: linear-gradient(135deg, #f5f7fb 0%, #ffffff 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .container {
-            width: 100%;
-            max-width: 520px;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(31, 41, 55, 0.08);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            padding: 40px 24px;
-            text-align: center;
-            color: white;
-            position: relative;
-        }
-        
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -10%;
-            width: 200px;
-            height: 200px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            position: relative;
-            z-index: 1;
-            letter-spacing: -0.5px;
-        }
-        
-        .check-icon {
-            width: 64px;
-            height: 64px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            z-index: 1;
-        }
-        
-        .check-icon svg {
-            width: 40px;
-            height: 40px;
-            stroke: white;
-            stroke-width: 2;
-            fill: none;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            animation: checkmark 0.8s ease-out 0.3s backwards;
-        }
-        
-        @keyframes scaleIn {
-            from {
-                transform: scale(0.5);
-                opacity: 0;
-            }
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-        
-        @keyframes checkmark {
-            0% {
-                stroke-dasharray: 50;
-                stroke-dashoffset: 50;
-            }
-            to {
-                stroke-dasharray: 50;
-                stroke-dashoffset: 0;
-            }
-        }
-        
-        .header-text h1 {
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
-        }
-        
-        .header-text p {
-            font-size: 14px;
-            opacity: 0.95;
-            line-height: 1.5;
-        }
-        
-        .content {
-            padding: 32px 24px;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            background: #fef3c7;
-            color: #92400e;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 24px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .info-section {
-            margin-bottom: 28px;
-        }
-        
-        .info-label {
-            font-size: 12px;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: block;
-        }
-        
-        .info-value {
-            font-size: 16px;
-            color: #1f2937;
-            font-weight: 500;
-            word-break: break-all;
-        }
-        
-        .divider {
-            height: 1px;
-            background: #e5e7eb;
-            margin: 24px 0;
-        }
-        
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 28px;
-        }
-        
-        .amount-section {
-            background: #f9fafb;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid #f3f4f6;
-        }
-        
-        .amount-label {
-            font-size: 12px;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: block;
-        }
-        
-        .amount-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: #2563eb;
-            line-height: 1;
-        }
-        
-        .instructions {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 28px;
-        }
-        
-        .instructions-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: #1e40af;
-            margin-bottom: 10px;
-            display: block;
-        }
-        
-        .instructions-text {
-            font-size: 13px;
-            color: #1e3a8a;
-            line-height: 1.6;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 12px;
-        }
-        
-        .btn {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        
-        .btn-primary {
-            background: #2563eb;
-            color: white;
-            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
-        }
-        
-        .btn-primary:hover {
-            background: #1d4ed8;
-            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
-            transform: translateY(-1px);
-        }
-        
-        .btn-secondary {
-            background: white;
-            color: #2563eb;
-            border: 1.5px solid #2563eb;
-        }
-        
-        .btn-secondary:hover {
-            background: #f0f9ff;
-            border-color: #1d4ed8;
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 24px;
-            border-top: 1px solid #f3f4f6;
-            background: #f9fafb;
-            font-size: 12px;
-            color: #6b7280;
-            line-height: 1.6;
-        }
-        
-        .footer-link {
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        
-        .footer-link:hover {
-            text-decoration: underline;
-        }
-        
-        @media (max-width: 480px) {
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
-            
-            .header-text h1 {
-                font-size: 24px;
-            }
-            
-            .amount-value {
-                font-size: 28px;
-            }
-            
-            .btn {
-                padding: 10px 16px;
-                font-size: 13px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmando pagamento — OSmais</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <div class="container">
-        <div class="card">
-            <div class="header">
-                <div class="logo">OS+</div>
-                <div class="check-icon">
-                    <svg viewBox="0 0 24 24">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                </div>
-                <div class="header-text">
-                    <h1>Pagamento Pendente</h1>
-                    <p>Sua transação foi registrada. Aguardando confirmação da transferência.</p>
-                </div>
-            </div>
-            
-            <div class="content">
-                <span class="status-badge">Aguardando Confirmação</span>
-                
-                <div class="info-section">
-                    <span class="info-label">Referência do Pedido</span>
-                    <span class="info-value">150302371025</span>
-                </div>
-                
-                <div class="grid-2">
-                    <div class="amount-section">
-                        <span class="amount-label">Valor do Plano</span>
-                        <span class="amount-value" id="valor-plano"></span>
-                    </div>
-                    <div class="amount-section">
-                        <span class="amount-label">Tipo de Plano</span>
-                        <span class="amount-value" id="tipo-plano" style="font-size: 18px; color: #374151;"></span>
-                    </div>
-                </div>
-                
-                <div class="info-section">
-                    <span class="info-label">Tipo de Pagamento</span>
-                    <span class="info-value">Transferência Bancária</span>
-                </div>
-                
-                <div class="instructions">
-                    <span class="instructions-title">⏱ O que acontece agora?</span>
-                    <span class="instructions-text">
-                        A confirmação da sua transferência bancária pode levar até 2 horas úteis. Depois disso, seu acesso ao SistemaOS será ativado automaticamente.
-                    </span>
-                </div>
-                
-                <div class="divider"></div>
-                
-            </div>
-            
-            <div class="footer">
-                <p>
-                    <strong>Precisa de ajuda?</strong><br>
-                    Entre em contato conosco pelo e-mail <a href="mailto:suporte@systemaos.com.br" class="footer-link">suporte@systemaos.com.br</a><br>
-                    ou acesse nossa <a href="#" class="footer-link">central de ajuda</a>
-                </p>
-            </div>
-        </div>
+<body class="bg-gray-50 min-h-screen flex items-center justify-content-center">
+  <div class="max-w-md mx-auto px-4 py-16 text-center">
+
+    <!-- Ícone girando -->
+    <div id="icon-pending" class="mx-auto w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center mb-6">
+      <svg class="w-10 h-10 text-blue-500 animate-spin" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+      </svg>
     </div>
 
-    <script>
-    setInterval(async () => {
+    <!-- Ícone sucesso (oculto inicialmente) -->
+    <div id="icon-success" class="hidden mx-auto w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
+      <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path d="M20 6L9 17l-5-5"/>
+      </svg>
+    </div>
+
+    <h1 id="titulo" class="text-2xl font-semibold text-gray-800 mb-3">Confirmando pagamento...</h1>
+    <p id="subtitulo" class="text-gray-500 text-sm mb-8">
+      Aguarde enquanto confirmamos seu pagamento com o Mercado Pago.<br>
+      Isso pode levar alguns segundos.
+    </p>
+
+    <!-- Barra de progresso -->
+    <div id="progress-wrap" class="w-full bg-gray-200 rounded-full h-1.5 mb-8">
+      <div id="progress-bar" class="bg-blue-500 h-1.5 rounded-full transition-all duration-1000" style="width: 10%"></div>
+    </div>
+
+    <!-- Mensagem de espera longa -->
+    <div id="msg-espera" class="hidden bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-700 mb-6">
+      O pagamento está demorando mais que o normal.<br>
+      Assim que confirmado, seu plano será ativado automaticamente.<br>
+      Você pode fechar esta página — enviaremos um email de confirmação.
+    </div>
+
+    <a href="/dashboard" class="text-sm text-gray-400 hover:text-gray-600 underline">
+      Ir para o dashboard agora
+    </a>
+
+  </div>
+
+  <script>
+    // Pega parâmetros da URL que o MP envia no redirect
+    const params = new URLSearchParams(window.location.search);
+    const status        = params.get('status');
+    const paymentId     = params.get('payment_id');
+    const externalRef   = params.get('external_reference');
+    const collectionStatus = params.get('collection_status');
+
+    // Se MP já mandou status=approved na URL, ativa direto
+    if (status === 'approved' || collectionStatus === 'approved') {
+      confirmarNoServidor();
+    } else {
+      iniciarPolling();
+    }
+
+    // Confirma no servidor (ativa o plano)
+    async function confirmarNoServidor() {
       try {
-        const res = await fetch('/pagamento/status');
+        const url = `/pagamento/confirmar?payment_id=${paymentId}&status=approved&external_reference=${externalRef}`;
+        const res = await fetch(url);
         const data = await res.json();
-    
-        if (data.status === 'aprovado') {
-          window.location.href = '/dashboard'; // MUDA SE PRECISAR
+        if (data.ok) {
+          mostrarSucesso();
+          setTimeout(() => window.location.href = '/dashboard', 2000);
+        } else {
+          iniciarPolling();
         }
-      } catch (e) {
-        console.log('Erro ao verificar pagamento');
+      } catch(e) {
+        iniciarPolling();
       }
-    }, 3000);
+    }
 
-    async function carregarDetalhes() {
-  try {
-    const res = await fetch('/pagamento/detalhes');
-    const data = await res.json();
+    // Polling — verifica a cada 4s por até 2 minutos
+    let tentativas = 0;
+    let progresso  = 10;
 
-    document.getElementById('valor-plano').innerText = `R$ ${data.valor}`;
-    document.getElementById('tipo-plano').innerText = data.plano;
+    function iniciarPolling() {
+      const intervalo = setInterval(async () => {
+        tentativas++;
+        progresso = Math.min(90, progresso + 8);
+        document.getElementById('progress-bar').style.width = progresso + '%';
 
-  } catch (e) {
-    console.log('Erro ao carregar detalhes');
-  }
-}
+        // Após 30s mostra mensagem de espera
+        if (tentativas === 8) {
+          document.getElementById('msg-espera').classList.remove('hidden');
+        }
 
-carregarDetalhes();
+        // Para após 2 minutos
+        if (tentativas >= 30) {
+          clearInterval(intervalo);
+          document.getElementById('titulo').textContent = 'Pagamento em processamento';
+          document.getElementById('subtitulo').textContent = 'Seu plano será ativado assim que o pagamento for confirmado.';
+          document.getElementById('progress-wrap').classList.add('hidden');
+          return;
+        }
 
+        try {
+          const res  = await fetch('/pagamento/status');
+          const data = await res.json();
 
-    </script>
+          if (data.status === 'aprovado') {
+            clearInterval(intervalo);
+            mostrarSucesso();
+            setTimeout(() => window.location.href = '/dashboard', 2000);
+          }
+        } catch(e) {
+          console.log('Aguardando...');
+        }
+      }, 4000);
+    }
+
+    function mostrarSucesso() {
+      document.getElementById('icon-pending').classList.add('hidden');
+      document.getElementById('icon-success').classList.remove('hidden');
+      document.getElementById('icon-success').classList.add('flex');
+      document.getElementById('titulo').textContent = 'Pagamento confirmado!';
+      document.getElementById('subtitulo').textContent = 'Seu plano foi ativado. Redirecionando...';
+      document.getElementById('progress-bar').style.width = '100%';
+      document.getElementById('progress-bar').classList.replace('bg-blue-500', 'bg-green-500');
+      document.getElementById('progress-wrap').classList.remove('hidden');
+      document.getElementById('msg-espera').classList.add('hidden');
+    }
+  </script>
 </body>
 </html>
